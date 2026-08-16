@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Painel Sicoob Previ — Planos de Benefícios e PGA · 2026</title>
+<style>
+  :root{
+    --petroleo:#013742;
+    --produto:#009F90;
+    --pga:#C5D211;
+    --texto-lima:#6B6E09;
+    --texto-principal:#132018;
+    --texto-secundario:#4B5A50;
+    --linhas:#DDE3D9;
+    --fundo:#EEF1EB;
+    --desfavoravel:#C1443C;
+    --branco:#FFFFFF;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--branco); color:var(--texto-principal);
+    font-family:Arial,Helvetica,sans-serif;
+  }
+  h1,h2,h3,.serif{font-family:Arial,Helvetica,sans-serif;}
+  .wrap{max-width:1240px;margin:0 auto;padding:28px 24px 64px;}
+
+  header.top{background:var(--petroleo);color:#fff;padding:28px 24px;}
+  header.top .wrap{padding:0;}
+  header.top h1{margin:0 0 4px;font-size:26px;font-weight:700;letter-spacing:.2px;}
+  header.top p{margin:0;color:rgba(255,255,255,.72);font-size:13px;}
+  header.top .meta{margin-top:10px;font-size:11.5px;color:rgba(255,255,255,.5);}
+
+  .tabs{display:flex;gap:8px;margin:24px 0 18px;flex-wrap:wrap;}
+  .tab-btn{
+    border:1px solid var(--linhas);background:var(--branco);color:var(--texto-secundario);
+    padding:10px 20px;border-radius:6px;font-family:Arial,Helvetica,sans-serif;font-size:13px;
+    font-weight:600;cursor:pointer;letter-spacing:.3px;transition:.15s;
+  }
+  .tab-btn.active[data-tab="MI"]{background:var(--produto);color:#fff;border-color:var(--produto);}
+  .tab-btn.active[data-tab="MP"]{background:var(--produto);color:#fff;border-color:var(--produto);}
+  .tab-btn.active[data-tab="PGA"]{background:var(--pga);color:var(--texto-lima);border-color:var(--pga);}
+
+  .controls{display:flex;flex-wrap:wrap;align-items:center;gap:14px;background:var(--branco);
+    border:1px solid var(--linhas);border-radius:8px;padding:14px 18px;margin-bottom:22px;}
+  .controls .grp{display:flex;align-items:center;gap:8px;}
+  .controls label{font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--texto-secundario);}
+  .month-btn{border:1px solid var(--linhas);background:var(--branco);color:var(--texto-secundario);
+    padding:6px 12px;border-radius:5px;font-size:12.5px;cursor:pointer;font-family:inherit;}
+  .month-btn.active{background:var(--petroleo);color:#fff;border-color:var(--petroleo);}
+  .mode-btn{border:1px solid var(--petroleo);background:var(--branco);color:var(--petroleo);
+    padding:6px 14px;border-radius:5px;font-size:12.5px;cursor:pointer;font-family:inherit;font-weight:600;}
+  .mode-btn.active{background:var(--petroleo);color:#fff;}
+  .spacer{flex:1;}
+  .badge-base{font-size:11px;color:var(--texto-secundario);}
+
+  .banner{border-radius:8px;padding:16px 20px;margin-bottom:22px;background:var(--branco);
+    border:1px solid var(--linhas);border-left:4px solid var(--produto);}
+  .banner h3{margin:0 0 4px;font-size:14px;font-family:Arial,Helvetica,sans-serif;color:var(--petroleo);}
+  .banner p{margin:0;font-size:12.5px;color:var(--texto-secundario);line-height:1.6;}
+  .banner .resumo{display:flex;gap:24px;margin-top:10px;flex-wrap:wrap;}
+  .banner .resumo .item{font-size:12.5px;color:var(--texto-principal);}
+  .banner .resumo .item b.neg{color:var(--desfavoravel);}
+
+  .kpi-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:22px;}
+  @media (max-width:1050px){.kpi-grid{grid-template-columns:repeat(2,1fr);}}
+  .kpi{background:var(--branco);border:1px solid var(--linhas);border-radius:8px;padding:14px 16px;}
+  .kpi .lbl{font-size:10.5px;text-transform:uppercase;letter-spacing:.5px;color:var(--texto-secundario);margin-bottom:6px;}
+  .kpi .val{font-size:19px;font-weight:700;font-family:Arial,Helvetica,sans-serif;}
+  .kpi .sub{font-size:11px;margin-top:4px;color:var(--texto-secundario);}
+  .kpi .sub.neg{color:var(--desfavoravel);}
+  .kpi .val.neg{color:var(--desfavoravel);}
+
+  .card{background:var(--branco);border:1px solid var(--linhas);border-radius:8px;padding:18px 20px;margin-bottom:22px;}
+  .card h3{margin:0 0 14px;font-size:14px;font-family:Arial,Helvetica,sans-serif;font-weight:700;color:var(--petroleo);
+    border-bottom:1px solid var(--linhas);padding-bottom:8px;}
+
+  svg text{font-family:Arial,Helvetica,sans-serif;}
+  .axis-label{fill:var(--texto-secundario);font-size:10px;}
+  .bar-orcado{fill:var(--petroleo);opacity:.35;}
+  .bar-real{fill:var(--produto);}
+  .bar-real-neg{fill:var(--desfavoravel);}
+  .legend-item{font-size:11px;fill:var(--texto-secundario);}
+
+  table.detail{width:100%;border-collapse:collapse;font-size:12px;margin-top:6px;}
+  table.detail th{text-align:right;font-size:10px;text-transform:uppercase;color:var(--texto-secundario);
+    padding:6px 8px;border-bottom:1px solid var(--linhas);font-weight:600;}
+  table.detail th:first-child{text-align:left;}
+  table.detail td{padding:6px 8px;border-bottom:1px solid var(--linhas);text-align:right;white-space:nowrap;}
+  table.detail td:first-child{text-align:left;color:var(--texto-secundario);white-space:normal;}
+  table.detail tr:last-child td{border-bottom:none;font-weight:700;border-top:2px solid var(--petroleo);}
+  table.detail td.neg{color:var(--desfavoravel);font-weight:600;}
+
+  table.indicadores{width:100%;border-collapse:collapse;font-size:11.5px;}
+  table.indicadores th,table.indicadores td{padding:7px 10px;border-bottom:1px solid var(--linhas);white-space:nowrap;text-align:right;}
+  table.indicadores th{font-size:10px;text-transform:uppercase;letter-spacing:.4px;color:var(--texto-secundario);font-weight:600;background:var(--branco);position:sticky;top:0;}
+  table.indicadores td:nth-child(1),table.indicadores th:nth-child(1){text-align:left;white-space:normal;min-width:190px;font-weight:600;color:var(--texto-principal);}
+  table.indicadores td:nth-child(2),table.indicadores th:nth-child(2){text-align:left;white-space:normal;min-width:230px;color:var(--texto-secundario);font-size:11px;}
+  table.indicadores td:nth-child(3),table.indicadores th:nth-child(3){text-align:left;white-space:normal;min-width:260px;color:var(--texto-secundario);font-size:11px;}
+  table.indicadores tbody tr:hover td{background:rgba(0,159,144,.05);}
+  table.indicadores td.periodo-atual{background:rgba(1,55,66,.05);font-weight:700;color:var(--petroleo);}
+
+  .ind-charts-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:20px;}
+  @media (max-width:900px){.ind-charts-grid{grid-template-columns:1fr;}}
+  .ind-chart-box{border:1px solid var(--linhas);border-radius:8px;padding:14px 16px 8px;}
+  .ind-chart-box h4{margin:0 0 10px;font-size:12px;font-weight:700;color:var(--petroleo);font-family:Arial,Helvetica,sans-serif;}
+  .ind-hit{cursor:pointer;}
+
+  .chart-legend{display:flex;gap:20px;margin-bottom:10px;flex-wrap:wrap;}
+  .chart-legend span{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;color:var(--texto-secundario);}
+  .chart-legend .sw{width:14px;height:10px;display:inline-block;border-radius:2px;}
+
+  .pga-op-section{background:var(--petroleo);color:#fff;border-radius:10px;padding:26px 28px;margin-top:8px;}
+  .pga-op-section h2{margin:0 0 6px;font-size:19px;color:var(--pga);font-family:Arial,Helvetica,sans-serif;}
+  .pga-op-section p.lead{margin:0 0 20px;font-size:12.5px;color:rgba(255,255,255,.72);max-width:760px;line-height:1.6;}
+  .op-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px;}
+  @media (max-width:900px){.op-kpis{grid-template-columns:repeat(2,1fr);}}
+  .op-kpi{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);border-radius:8px;padding:12px 14px;}
+  .op-kpi .lbl{font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:rgba(255,255,255,.5);margin-bottom:6px;}
+  .op-kpi .val{font-size:18px;font-weight:700;font-family:Arial,Helvetica,sans-serif;color:#fff;}
+  .op-chart-box{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:16px 18px 8px;}
+  .op-legend{display:flex;gap:22px;margin-bottom:6px;font-size:11px;color:rgba(255,255,255,.72);}
+  .op-legend span{display:inline-flex;align-items:center;gap:6px;}
+  .sw{width:14px;height:3px;display:inline-block;border-radius:2px;}
+
+  footer{margin-top:30px;font-size:10.5px;color:var(--texto-secundario);text-align:center;}
+
+  .chart-tooltip{position:fixed;pointer-events:none;background:var(--petroleo);color:#fff;
+    padding:9px 13px;border-radius:6px;font-family:Arial,Helvetica,sans-serif;font-size:11.5px;
+    line-height:1.65;box-shadow:0 6px 18px rgba(1,55,66,.28);z-index:999;opacity:0;
+    transform:translateY(4px);transition:opacity .12s,transform .12s;max-width:250px;}
+  .chart-tooltip.show{opacity:1;transform:translateY(0);}
+  .chart-tooltip .tt-title{display:block;font-size:12px;font-weight:700;margin-bottom:5px;
+    color:var(--pga);border-bottom:1px solid rgba(255,255,255,.2);padding-bottom:4px;}
+  .chart-tooltip .tt-row{display:flex;justify-content:space-between;gap:14px;color:rgba(255,255,255,.82);}
+  .chart-tooltip .tt-row.active{color:#fff;font-weight:700;}
+  .chart-tooltip .tt-row .neg{color:var(--desfavoravel);font-weight:700;}
+
+  #barChart .bar-unit,#pgaOpSection .line-hit{cursor:pointer;}
+  #barChart .bar-unit:hover rect:not(.bar-hit),
+  #barChart .bar-unit:hover polygon{opacity:.82;}
+  #pgaOpSection .line-hit:hover ~ .hover-marker,
+  .hover-marker{pointer-events:none;}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <h1>Painel Sicoob Previ — Planos de Benefícios e PGA</h1>
+    <p>Orçado × Realizado 2026 · Multi-Instituído (MI) · Multi-Patrocinado (MP) · Plano de Gestão Administrativa (PGA)</p>
+    <div class="meta">Data-base: 31/07/2026 · Série realizada: jan/26–jul/26 · Valores em Reais (R$)</div>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="MI">PLANO MULTI-INSTITUÍDO</button>
+    <button class="tab-btn" data-tab="MP">PLANO MULTI-PATROCINADO</button>
+    <button class="tab-btn" data-tab="PGA">PGA — GESTÃO ADMINISTRATIVA</button>
+  </div>
+
+  <div class="controls">
+    <div class="grp">
+      <label>Competência</label>
+      <div id="monthButtons"></div>
+    </div>
+    <div class="grp">
+      <label>Visão</label>
+      <button class="mode-btn active" data-mode="mes">Mês</button>
+      <button class="mode-btn" data-mode="acum">Acumulado no ano</button>
+    </div>
+    <div class="spacer"></div>
+    <div class="badge-base" id="periodoLabel"></div>
+  </div>
+
+  <div id="banner"></div>
+  <div class="kpi-grid" id="kpiGrid"></div>
+
+  <div class="card">
+    <h3 id="chartTitle">Orçado × Realizado por linha</h3>
+    <div id="barLegend" class="chart-legend"></div>
+    <div id="barChart"></div>
+  </div>
+
+  <div id="indicadoresSection"></div>
+
+  <div class="card">
+    <h3 id="detailTitle">Detalhamento contábil</h3>
+    <div id="detailTable"></div>
+  </div>
+
+  <div id="pgaOpSection"></div>
+
+  <footer>Painel gerado a partir do balancete Sicoob Previ · dados consolidados por Marcelo Alves de Almeida — Gerência de Operações de Previdência</footer>
+</div>
+
+<div id="chartTooltip" class="chart-tooltip"></div>
+
+<script>
+const DATA = {"meses2026": ["jan/26", "fev/26", "mar/26", "abr/26", "mai/26", "jun/26", "jul/26"], "MI": {"arrecadacao": {"PARTICIPANTES - REGULAR": {"orcado": [25820039.29, 26587665.27, 28369872.95, 29080913.98, 29886184.64, 31826163.45, 32365337.93], "realizado": [25452564.16, 25194752.87, 25577578.48, 26107183.18, 26269844.4, 26440592.76, 27457384.4]}, "PARTICIPANTES - VOLUNTÁRIA": {"orcado": [946180.7, 946180.7, 946180.7, 946180.7, 946180.7, 946180.7, 946180.7], "realizado": [1260098.88, 1979014.72, 1813715.73, 1632211.92, 2131621.29, 3480405.76, 2511310.55]}, "CONTRIBUIÇÕES EMPREGADORES": {"orcado": [3603012.12, 3872035.9, 3908190.7, 3944345.5, 3980500.3, 4016655.1, 4052809.9], "realizado": [3687004.8, 3709939.27, 3797035.2, 4253808.61, 4255807.6, 4343957.36, 4317994.42]}, "CONTRIBUIÇÕES DE RISCOS TERCEIRIZADOS": {"orcado": [1743649.13, 1743915.13, 1744181.13, 1744447.13, 1744713.13, 1744979.13, 1745245.13], "realizado": [1677481.36, 1642474.13, 1646863.32, 1601168.47, 1613721.34, 1607680.4, 1581891.43]}, "PORTABILIDADE": {"orcado": [1305518.15, 1305518.15, 1305518.15, 1305518.15, 1305518.15, 1305518.15, 1305518.15], "realizado": [2111558.06, 2121969.48, 1148146.07, 1170343.34, 2704658.97, 2725986.88, 1898187.44]}, "INDENIZAÇÃO DE RISCO TERCEIRIZADO": {"orcado": [49222.76, 49222.76, 49222.76, 49222.76, 49222.76, 49222.76, 49222.76], "realizado": [108545.39, 0.0, 159234.25, 0.0, 0.0, 146004.57, 338262.0]}, "OUTROS": {"orcado": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "realizado": [0.04, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]}}, "totalArrecadacao": {"orcado": [33467622.15, 34504537.91, 36323166.39, 37070628.22, 37912319.68, 39888719.29, 40464314.57], "realizado": [34297252.69, 34648150.47, 34142573.05, 34764715.52, 36975653.6, 38744627.73, 38105030.24]}, "resultadoInvestimentos": {"orcado": [33862150.44, 33823215.7, 33945006.84, 32822367.6, 31678875.44, 31911681.19, 33978326.25], "realizado": [42274705.55, 33871364.53, 40700633.85, 38896697.61, 30311122.82, 34599393.74, 38316421.82]}, "arrecadacaoInvestimentos": {"orcado": [67329772.59, 68327753.61, 70268173.23, 69892995.82, 69591195.12, 71800400.48, 74442640.82], "realizado": [76571958.24, 68519515.0, 74843206.9, 73661413.13, 67286776.42, 73344021.47, 76421452.06]}, "deducoes": {"BENEFÍCIOS DE PRESTAÇÃO CONTINUADA": {"orcado": [-425654.76, -425654.76, -425654.76, -425654.76, -425654.76, -425654.76, -425654.76], "realizado": [-2960018.1, -929177.45, -2012515.39, -549368.96, -785362.1, -1106533.71, -589162.56]}, "BENEFÍCIOS DE PRESTAÇÃO ÚNICA": {"orcado": [-181785.1, -181785.1, -181785.1, -181785.1, -181785.1, -181785.1, -181785.1], "realizado": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]}, "RESGATE TOTAL": {"orcado": [-24303799.89, -24303799.89, -24303799.89, -24303799.89, -24303799.89, -24303799.89, -24303799.89], "realizado": [-18504921.9, -24146224.75, -22825324.16, -16773430.58, -27197555.48, -19849006.32, -23780954.75]}, "RESGATE PARCIAL": {"orcado": [-2893603.24, -2893603.24, -2893603.24, -2893603.24, -2893603.24, -2893603.24, -2893603.24], "realizado": [-891970.23, -1372895.47, -1068836.88, -785752.21, -1962443.81, -1417843.4, -816331.78]}, "PORTABILIDADE": {"orcado": [-1075395.08, -1075395.08, -1075395.08, -1075395.08, -1075395.08, -1075395.08, -1075395.08], "realizado": [-1518252.85, -1779566.69, -271421.17, -1630327.82, -243021.12, -489499.58, -587546.39]}, "REPASSE DE PRÊMIO DE RISCOS TERCEIRIZADOS": {"orcado": [-1743649.13, -1743915.13, -1744181.13, -1744447.13, -1744713.13, -1744979.13, -1745245.13], "realizado": [-1677481.36, -1642474.13, -1646863.32, -1601168.47, -1613721.34, -1607680.4, -1581891.43]}, "OUTRAS DEDUÇÕES": {"orcado": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "realizado": [-936.78, -817.17, -1039.3, -909.28, -919.3, -479101.29, -114323.17]}, "TAXA DE CARREGAMENTO": {"orcado": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "realizado": [0.0, 0.0, -26.11, 0.0, 0.0, 0.0, 0.0]}, "FUNDOS PREVIDENCIAIS": {"orcado": [-607044.84, -607044.84, -607044.84, -607044.84, -607044.84, -607044.84, -607044.84], "realizado": [-687798.98, -892636.97, -863247.39, -981222.1, -1235294.98, -859686.98, -1357922.24]}}, "totalDeducoes": {"orcado": [-31230932.04, -31231198.04, -31231464.04, -31231730.04, -31231996.04, -31232262.04, -31232528.04], "realizado": [-26241380.2, -30763792.63, -28689273.72, -22322179.42, -33038318.13, -25809351.68, -28828132.32]}, "resultadoDoPlano": {"orcado": [36098840.55, 37096555.57, 39036709.19, 38661265.78, 38359199.08, 40568138.44, 43210112.78], "realizado": [50330578.04, 37755722.37, 46153933.18, 51339233.71, 34248458.29, 47534669.79, 47593319.74]}, "acumulado2026": {"PARTICIPANTES - REGULAR": {"orcado": 203936177.51, "realizado": 182499900.25}, "PARTICIPANTES - VOLUNTÁRIA": {"orcado": 6623264.9, "realizado": 14808378.85}, "CONTRIBUIÇÕES EMPREGADORES": {"orcado": 27377549.52, "realizado": 28365547.26}, "CONTRIBUIÇÕES DE RISCOS TERCEIRIZADOS": {"orcado": 12211129.91, "realizado": 11371280.45}, "PORTABILIDADE": {"orcado": 9138627.05, "realizado": 13880850.24}, "INDENIZAÇÃO DE RISCO TERCEIRIZADO": {"orcado": 344559.32, "realizado": 752046.21}, "OUTROS": {"orcado": 0.0, "realizado": 0.04}, "TOTAL_ARRECADAÇÃO": {"orcado": 259631308.21, "realizado": 251678003.3}, "RESULTADO_INVESTIMENTOS": {"orcado": 232021623.46, "realizado": 258970339.92}, "ARRECADAÇÃO+INVESTIMENTOS": {"orcado": 491652931.67, "realizado": 510648343.22}, "BENEFÍCIOS DE PRESTAÇÃO CONTINUADA": {"orcado": -2979583.32, "realizado": -8932138.27}, "BENEFÍCIOS DE PRESTAÇÃO ÚNICA": {"orcado": -1272495.7, "realizado": 0.0}, "RESGATE TOTAL": {"orcado": -170126599.23, "realizado": -153077417.94}, "RESGATE PARCIAL": {"orcado": -20255222.68, "realizado": -8316073.78}, "PORTABILIDADE_DED": {"orcado": -7527765.56, "realizado": -6519635.62}, "REPASSE DE PRÊMIO DE RISCOS TERCEIRIZADOS": {"orcado": -12211129.91, "realizado": -11371280.45}, "OUTRAS DEDUÇÕES": {"orcado": 0.0, "realizado": -598046.29}, "TAXA DE CARREGAMENTO": {"orcado": 0.0, "realizado": -26.11}, "FUNDOS PREVIDENCIAIS": {"orcado": -4249313.88, "realizado": -6877809.64}, "TOTAL_DEDUÇÕES": {"orcado": -218622110.28, "realizado": -195692428.1}, "RESULTADO_DO_PLANO": {"orcado": 273030821.39, "realizado": 314955915.12}}, "indicadores": {"periodos": ["31/12/2021","31/12/2022","31/12/2023","31/12/2024","31/12/2025","31/01/2026","28/02/2026","31/03/2026","30/04/2026","31/05/2026","30/06/2026","31/07/2026"], "itens": [{"nome":"Consumo da Arrecadação","formula":"Total das Deduções ÷ Total da Arrecadação","leitura":"> 1: pressão elevada sobre o fluxo previdencial · < 1: folga no fluxo previdencial","valores":[0.40,0.56,0.64,0.68,0.76,0.75,0.80,0.81,0.76,0.78,0.76,0.75]},{"nome":"Participação do Patrocinador","formula":"Contribuições dos Empregadores ÷ Total da Arrecadação","leitura":"> 1: forte participação do patrocinador (cenário ideal) · < 1: risco estrutural de longo prazo","valores":[0.04,0.05,0.07,0.08,0.10,0.11,0.11,0.11,0.11,0.11,0.11,0.11]},{"nome":"Índice de Sustentabilidade Previdencial","formula":"Resultado do Plano sem Investimentos ÷ (Benefícios + Resgates totais)","leitura":"> 1: autonomia previdencial, plano se sustenta sem investimentos · < 1: dependência estrutural dos investimentos","valores":[2.01,0.96,0.70,0.58,0.39,0.47,0.32,0.30,0.40,0.35,0.40,0.41]}]}}, "MP": {"arrecadacao": {"CONTRIBUIÇÕES PATROCINADORES": {"orcado": [1793060.45, 1896677.86, 1914761.2, 1932844.54, 1950927.88, 1969011.22, 1987094.56], "realizado": [1854579.29, 1816743.97, 1831863.3, 1815140.31, 1879507.14, 2042100.21, 2227861.6]}, "CONTRIBUIÇÕES PARTICIPANTES": {"orcado": [2088966.68, 2192584.09, 2210667.43, 2228750.77, 2246834.11, 2264917.45, 2283000.79], "realizado": [2152064.12, 2120382.1, 2130377.46, 2114569.88, 2191362.28, 2326996.03, 2556632.52]}, "CONTRIBUIÇÕES AUTOPATROCINADOS": {"orcado": [22138.81, 22138.81, 22138.81, 22138.81, 22138.81, 22138.81, 22138.81], "realizado": [16965.87, 18671.4, 20369.3, 21366.52, 19627.43, 21069.36, 19884.95]}, "PORTABILIDADE": {"orcado": [23661.78, 23661.78, 23661.78, 23661.78, 23661.78, 23661.78, 23661.78], "realizado": [16.94, 0.0, 0.0, 76629.83, 0.0, 0.0, 0.0]}, "OUTROS": {"orcado": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "realizado": [0.2, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]}}, "totalArrecadacao": {"orcado": [3927827.72, 4135062.54, 4171229.22, 4207395.9, 4243562.58, 4279729.26, 4315895.94], "realizado": [4023626.42, 3955797.47, 3982610.06, 4027706.54, 4090496.85, 4390165.6, 4804379.07]}, "resultadoInvestimentos": {"orcado": [4137610.33, 4106276.28, 4173577.55, 4021943.42, 3906137.97, 3942637.19, 4216244.76], "realizado": [5525438.51, 4278082.09, 4898910.91, 4722495.37, 3547242.07, 4320863.16, 4913554.17]}, "arrecadacaoInvestimentos": {"orcado": [8065438.05, 8241338.82, 8344806.77, 8229339.32, 8149700.55, 8222366.45, 8532140.7], "realizado": [9549064.93, 8233879.56, 8881520.97, 8750201.91, 7637738.92, 8711028.76, 9717933.24]}, "deducoes": {"BENEFÍCIOS DE PRESTAÇÃO CONTINUADA": {"orcado": [-536206.71, -536206.71, -536206.71, -536206.71, -536206.71, -536206.71, -536206.71], "realizado": [-33399.86, -33399.86, -33399.86, -33399.86, -443117.04, -50709.99, -50709.99]}, "BENEFÍCIOS DE PRESTAÇÃO ÚNICA": {"orcado": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "realizado": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]}, "RESGATE TOTAL": {"orcado": [-544819.83, -544819.83, -544819.83, -544819.83, -544819.83, -544819.83, -544819.83], "realizado": [-704611.46, -361276.24, -1344837.55, -578259.81, -775927.14, -1333750.69, -275331.98]}, "RESGATE PARCIAL": {"orcado": [-1804908.29, -1804908.29, -1804908.29, -1804908.29, -1804908.29, -1804908.29, -1804908.29], "realizado": [-838194.87, -289254.69, -145111.34, -380211.47, -172482.47, -496391.74, -357420.87]}, "PORTABILIDADE": {"orcado": [-62017.61, -62017.61, -62017.61, -62017.61, -62017.61, -62017.61, -62017.61], "realizado": [-583612.71, -106117.72, 0.0, -227578.43, 0.0, 0.0, -62488.46]}, "REPASSE DE PRÊMIO DE RISCOS TERCEIRIZADOS": {"orcado": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "realizado": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]}, "OUTRAS DEDUÇÕES": {"orcado": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "realizado": [-21.01, -19.01, -25.01, -22.97, -21.6, -21.71, -29015.02]}, "TAXA DE CARREGAMENTO": {"orcado": [-87567.58, -92230.37, -93044.12, -93857.87, -94671.62, -95485.37, -96299.12], "realizado": [-90135.09, -88768.71, -89303.11, -88765.39, -91783.03, -98637.2, -107204.94]}, "FUNDOS PREVIDENCIAIS": {"orcado": [-53890.18, -53890.18, -53890.18, -53890.18, -53890.18, -53890.18, -53890.18], "realizado": [-124491.78, -58002.16, -65478.54, -71245.74, -129156.91, -126857.07, -32058.38]}}, "totalDeducoes": {"orcado": [-3089410.2, -3094072.99, -3094886.74, -3095700.49, -3096514.24, -3097327.99, -3098141.74], "realizado": [-2374466.78, -936838.39, -1678155.41, -1379483.67, -1612488.19, -2106368.4, -914229.64]}, "resultadoDoPlano": {"orcado": [4976027.85, 5147265.83, 5249920.03, 5133638.83, 5053186.31, 5125038.46, 5433998.96], "realizado": [7174598.15, 7297041.17, 7203365.56, 7370718.24, 6025250.73, 6604660.36, 8803703.6]}, "acumulado2026": {"CONTRIBUIÇÕES PATROCINADORES": {"orcado": 13444377.71, "realizado": 13467795.82}, "CONTRIBUIÇÕES PARTICIPANTES": {"orcado": 15515721.32, "realizado": 15592384.39}, "CONTRIBUIÇÕES AUTOPATROCINADOS": {"orcado": 154971.67, "realizado": 137954.83}, "PORTABILIDADE": {"orcado": 165632.46, "realizado": 76646.77}, "OUTROS": {"orcado": 0.0, "realizado": 0.2}, "TOTAL_ARRECADAÇÃO": {"orcado": 29280703.16, "realizado": 29274782.01}, "RESULTADO_INVESTIMENTOS": {"orcado": 28504427.5, "realizado": 32206586.28}, "ARRECADAÇÃO+INVESTIMENTOS": {"orcado": 57785130.66, "realizado": 61481368.29}, "BENEFÍCIOS DE PRESTAÇÃO CONTINUADA": {"orcado": -3753446.97, "realizado": -678136.46}, "BENEFÍCIOS DE PRESTAÇÃO ÚNICA": {"orcado": 0.0, "realizado": 0.0}, "RESGATE TOTAL": {"orcado": -3813738.81, "realizado": -5373994.87}, "RESGATE PARCIAL": {"orcado": -12634358.03, "realizado": -2679067.45}, "PORTABILIDADE_DED": {"orcado": -434123.27, "realizado": -979797.32}, "REPASSE DE PRÊMIO DE RISCOS TERCEIRIZADOS": {"orcado": 0.0, "realizado": 0.0}, "OUTRAS DEDUÇÕES": {"orcado": 0.0, "realizado": -29146.33}, "TAXA DE CARREGAMENTO": {"orcado": -653156.05, "realizado": -654597.47}, "FUNDOS PREVIDENCIAIS": {"orcado": -377231.26, "realizado": -607290.58}, "TOTAL_DEDUÇÕES": {"orcado": -21666054.39, "realizado": -11002030.48}, "RESULTADO_DO_PLANO": {"orcado": 36119076.27, "realizado": 50479337.81}}, "indicadores": {"periodos": ["31/12/2021","31/12/2022","31/12/2023","31/12/2024","31/12/2025","31/01/2026","28/02/2026","31/03/2026","30/04/2026","31/05/2026","30/06/2026","31/07/2026"], "itens": [{"nome":"Consumo da Arrecadação","formula":"Total das Deduções ÷ Total da Arrecadação","leitura":"> 1: pressão elevada sobre o fluxo previdencial · < 1: folga no fluxo previdencial","valores":[0.36,0.28,0.09,0.15,0.25,0.54,0.37,0.37,0.36,0.35,0.37,0.33]},{"nome":"Participação do Patrocinador","formula":"Contribuições dos Empregadores ÷ Total da Arrecadação","leitura":"> 1: forte participação do patrocinador (cenário ideal) · < 1: risco estrutural de longo prazo","valores":[0.40,0.42,0.45,0.45,0.45,0.46,0.46,0.46,0.46,0.46,0.46,0.46]},{"nome":"Índice de Sustentabilidade Previdencial","formula":"Resultado do Plano sem Investimentos ÷ (Benefícios + Resgates totais)","leitura":"> 1: autonomia previdencial, plano se sustenta sem investimentos · < 1: dependência estrutural dos investimentos","valores":[2.04,2.99,13.10,7.61,4.74,2.52,4.55,3.00,3.33,3.33,2.93,3.51]}]}}, "PGA": {"receitas": {"RECEITA DE CARREGAMENTO": {"orcado": [87567.58, 92230.37, 93044.12, 93857.87, 94671.62, 95485.37, 96299.12], "realizado": [90135.09, 88768.71, 89329.22, 88765.39, 91783.03, 98637.2, 107204.94]}, "INVESTIMENTOS (TAXA DE ADMINISTRAÇÃO)": {"orcado": [518222.43, 449399.43, 555753.37, 511206.16, 517060.74, 548938.65, 607936.79], "realizado": [528352.92, 459101.97, 568883.76, 525729.87, 532689.37, 565999.02, 628934.67]}, "RECEITA SEGURADORA": {"orcado": [524549.87, 524549.87, 524549.87, 549074.96, 549074.96, 549074.96, 549074.96], "realizado": [524549.87, 524549.87, 524549.87, 544547.47, 544547.47, 544547.47, 544547.47]}, "OUTRAS RECEITAS": {"orcado": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "realizado": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]}}, "resultadoInvestimentos": {"orcado": [222553.08, 208715.94, 187158.99, 173819.93, 175258.15, 178447.05, 196568.38], "realizado": [236656.62, 214738.36, 221413.41, 210950.14, 202085.39, 198008.72, 255610.57]}, "totalReceitas": {"orcado": [1352892.96, 1274895.61, 1360506.35, 1327958.92, 1336065.47, 1371946.03, 1449879.25], "realizado": [1379694.5, 1287158.91, 1404176.26, 1369992.87, 1371105.26, 1407192.41, 1536297.65]}, "despesas": {"PESSOAL E ENCARGOS": {"orcado": [-480570.86, -504364.37, -513410.24, -466015.11, -475105.34, -482999.74, -457682.07], "realizado": [-433590.25, -450801.09, -456487.46, -458520.67, -421515.49, -457113.7, -455198.49]}, "TREINAMENTOS/CONGRESSOS E SEMINÁRIOS": {"orcado": [-5309.16, -5309.16, -24329.16, -8309.16, -5309.16, -11512.69, -9512.69], "realizado": [0.0, 0.0, 0.0, 0.0, -3880.0, 0.0, -4431.0]}, "VIAGENS E ESTADIAS": {"orcado": [-1000.0, -1000.0, -5100.0, -1000.0, -1000.0, -11100.0, -13050.0], "realizado": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]}, "SERVIÇOS DE TERCEIROS": {"orcado": [-446490.09, -404319.91, -469423.28, -442118.45, -445678.0, -465168.77, -501259.14], "realizado": [-406755.07, -368028.73, -421217.75, -416077.03, -387221.34, -444782.76, -649900.66]}, "DESPESAS GERAIS": {"orcado": [-40460.64, -40460.64, -90460.64, -40460.64, -40460.64, -90960.64, -40460.64], "realizado": [-34060.94, -34190.1, -85325.25, -34663.57, -34435.41, -98710.77, -38794.25]}, "DEPRECIAÇÕES E AMORTIZAÇÕES": {"orcado": [-78413.96, -79551.86, -80689.76, -81827.66, -83698.06, -84835.95, -85973.85], "realizado": [-81740.43, -83142.58, -84267.63, -86351.03, -85594.16, -87085.68, -82130.4]}, "TRIBUTOS": {"orcado": [-85909.53, -82282.65, -86263.53, -84750.09, -85127.04, -86795.49, -90419.39], "realizado": [-87155.79, -82852.89, -88294.19, -86704.67, -86756.39, -88434.44, -94437.84]}, "CONSTITUIÇÕES/REVERSÕES DE PROVISÕES CONTINGENCIAIS": {"orcado": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "realizado": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]}, "OUTRAS DESPESAS": {"orcado": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "realizado": [0.0, 0.0, 0.0, -18631.25, -12261.27, -555.32, 0.0]}}, "totalDespesas": {"orcado": [-1138154.24, -1117288.59, -1269676.61, -1124481.11, -1136378.24, -1233373.28, -1198357.78], "realizado": [-1043302.48, -1019015.39, -1135592.28, -1100948.22, -1031664.06, -1176682.67, -1324892.64]}, "resultadoDoPlano": {"orcado": [214738.72, 157607.02, 90829.74, 203477.81, 199687.23, 138572.75, 251521.47], "realizado": [336392.02, 268143.52, 268583.98, 269044.65, 339441.2, 230509.74, 211405.01]}, "acumulado2026": {"RECEITA DE CARREGAMENTO": {"orcado": 653156.05, "realizado": 654623.58}, "INVESTIMENTOS (TAXA DE ADMINISTRAÇÃO)": {"orcado": 3708517.57, "realizado": 3809691.58}, "RECEITA SEGURADORA": {"orcado": 3769949.45, "realizado": 3751839.49}, "OUTRAS RECEITAS": {"orcado": 0.0, "realizado": 0.0}, "RESULTADO_INVESTIMENTOS": {"orcado": 1342521.52, "realizado": 1539463.21}, "TOTAL_RECEITAS": {"orcado": 9474144.59, "realizado": 9755617.86}, "PESSOAL E ENCARGOS": {"orcado": -3380147.73, "realizado": -3133227.15}, "TREINAMENTOS/CONGRESSOS E SEMINÁRIOS": {"orcado": -69591.18, "realizado": -8311.0}, "VIAGENS E ESTADIAS": {"orcado": -33250.0, "realizado": 0.0}, "SERVIÇOS DE TERCEIROS": {"orcado": -3174457.64, "realizado": -3093983.34}, "DESPESAS GERAIS": {"orcado": -383724.48, "realizado": -360180.29}, "DEPRECIAÇÕES E AMORTIZAÇÕES": {"orcado": -574991.1, "realizado": -590311.91}, "TRIBUTOS": {"orcado": -601547.72, "realizado": -614636.21}, "CONSTITUIÇÕES/REVERSÕES DE PROVISÕES CONTINGENCIAIS": {"orcado": 0.0, "realizado": 0.0}, "OUTRAS DESPESAS": {"orcado": 0.0, "realizado": -31447.84}, "TOTAL_DESPESAS": {"orcado": -8217709.85, "realizado": -7832097.74}, "RESULTADO_DO_PLANO": {"orcado": 1256434.74, "realizado": 1923520.12}}}, "PGA_HIST": {"meses": ["jan/24", "fev/24", "mar/24", "abr/24", "mai/24", "jun/24", "jul/24", "ago/24", "set/24", "out/24", "nov/24", "dez/24", "jan/25", "fev/25", "mar/25", "abr/25", "mai/25", "jun/25", "jul/25", "ago/25", "set/25", "out/25", "nov/25", "dez/25", "jan/26", "fev/26", "mar/26", "abr/26", "mai/26", "jun/26", "jul/26"], "receitasTotais401": [971646.79, 903153.63, 950842.14, 989050.88, 977600.6, 960089.61, 1029308.93, 1012210.3, 973143.99, 1071831.84, 972013.09, 1082810.67, 1057709.53, 1007474.81, 990485.93, 1037304.08, 1076555.97, 1055032.18, 1144781.81, 1085163.35, 1131499.98, 1157774.69, 1072279.7, 1237598.29, 1143037.88, 1072420.55, 1182762.85, 1159042.73, 1169019.87, 1209183.69, 1280687.08], "resultadoInvestimentos405": [-131816.66, -120846.43, -101576.76, -91560.6, -124539.05, -95153.1, -156814.52, -149447.29, -117370.75, -136001.86, -122989.44, -114285.11, -188631.79, -163507.06, -148258.51, -180900.33, -178176.55, -173341.63, -187907.94, -203423.11, -209640.85, -239323.97, -209222.29, -236116.46, -236656.62, -214738.36, -221413.41, -210950.14, -202085.39, -198008.72, -255610.57], "totalReceita": [839830.13, 782307.2, 849265.38, 897490.28, 853061.55, 864936.51, 872494.41, 862763.01, 855773.24, 935829.98, 849023.65, 968525.56, 869077.74, 843967.75, 842227.42, 856403.75, 898379.42, 881690.55, 956873.87, 881740.24, 921859.13, 918450.72, 863057.41, 1001481.83, 906381.26, 857682.19, 961349.44, 948092.59, 966934.48, 1011174.97, 1025076.51], "despesasTotais402": [-1021567.09, -912623.73, -980292.0, -962544.63, -956379.18, -999426.48, -1003088.15, -999814.4, -1029088.73, -1036502.64, -950255.72, -1030595.67, -1089761.3, -982635.89, -981595.69, -967611.73, -1018995.35, -1066366.48, -1020033.64, -974672.44, -1153215.36, -1054775.06, -1036944.25, -1137156.25, -1043302.48, -1019015.39, -1135592.28, -1100948.22, -1031664.06, -1176682.67, -1324892.64], "depreciacaoAmortizacao": [50763.09, 51346.83, 51937.06, 52543.78, 53285.4, 54125.93, 55679.18, 65104.43, 50260.11, 59848.23, 61463.35, 63039.86, 64804.58, 65222.5, 66362.54, 67839.02, 68839.72, 70592.22, 72454.92, 73951.56, 75682.2, 76783.33, 78386.3, 79838.54, 81740.43, 83142.58, 84267.63, 86351.03, 85594.16, 87085.68, 82130.4], "totalDespesas": [-970804.0, -861276.9, -928354.94, -910000.85, -903093.78, -945300.55, -947408.97, -934709.97, -978828.62, -976654.41, -888792.37, -967555.81, -1024956.72, -917413.39, -915233.15, -899772.71, -950155.63, -995774.26, -947578.72, -900720.88, -1077533.16, -977991.73, -958557.95, -1057317.71, -961562.05, -935872.81, -1051324.65, -1014597.19, -946069.9, -1089596.99, -1242762.24], "resultado": [81896.36, 111376.33, 72126.9, 118066.85, 145760.47, 55816.23, 183035.3, 161843.19, 61426.01, 171331.06, 144746.81, 166500.11, 156580.02, 188345.98, 157148.75, 250592.68, 235737.17, 162007.33, 312656.11, 313914.02, 187925.47, 342323.6, 244557.74, 336558.5, 336392.02, 268143.52, 268583.98, 269044.65, 339441.2, 230509.74, 211405.01], "resultadoOperacional": [842.79, 41876.73, 22487.2, 79050.03, 74506.82, 14789.06, 81899.96, 77500.33, -5684.63, 95177.43, 83220.72, 115254.86, 32752.81, 90061.42, 75252.78, 137531.37, 126400.34, 59257.92, 197203.09, 184442.47, 53966.82, 179782.96, 113721.75, 180280.58, 181475.83, 136547.74, 131438.2, 144445.54, 222949.97, 119586.7, 37924.84]}};
+const MESES = DATA.meses2026;
+
+// Recalcula acumulado2026 sempre a partir dos arrays mensais (fonte única da verdade),
+// evitando divergência entre o campo estático e a série mensal em atualizações futuras.
+function sumArr(a){ return a.reduce((s,v)=>s+v,0); }
+function recalcAcumulado(plano, isPGA){
+  const acc = {};
+  const grpKey = isPGA ? 'receitas' : 'arrecadacao';
+  const dedKey = isPGA ? 'despesas' : 'deducoes';
+  const usadas = new Set();
+  Object.keys(plano[grpKey]).forEach(k=>{
+    acc[k] = {orcado: sumArr(plano[grpKey][k].orcado), realizado: sumArr(plano[grpKey][k].realizado)};
+    usadas.add(k);
+  });
+  if(isPGA){
+    acc['RESULTADO_INVESTIMENTOS'] = {orcado: sumArr(plano.resultadoInvestimentos.orcado), realizado: sumArr(plano.resultadoInvestimentos.realizado)};
+    acc['TOTAL_RECEITAS'] = {orcado: sumArr(plano.totalReceitas.orcado), realizado: sumArr(plano.totalReceitas.realizado)};
+  } else {
+    acc['TOTAL_ARRECADAÇÃO'] = {orcado: sumArr(plano.totalArrecadacao.orcado), realizado: sumArr(plano.totalArrecadacao.realizado)};
+    acc['RESULTADO_INVESTIMENTOS'] = {orcado: sumArr(plano.resultadoInvestimentos.orcado), realizado: sumArr(plano.resultadoInvestimentos.realizado)};
+    acc['ARRECADAÇÃO+INVESTIMENTOS'] = {orcado: sumArr(plano.arrecadacaoInvestimentos.orcado), realizado: sumArr(plano.arrecadacaoInvestimentos.realizado)};
+  }
+  Object.keys(plano[dedKey]).forEach(k=>{
+    const key = usadas.has(k) ? k+'_DED' : k;
+    acc[key] = {orcado: sumArr(plano[dedKey][k].orcado), realizado: sumArr(plano[dedKey][k].realizado)};
+  });
+  const totalDedKey = isPGA ? 'totalDespesas' : 'totalDeducoes';
+  acc[isPGA?'TOTAL_DESPESAS':'TOTAL_DEDUÇÕES'] = {orcado: sumArr(plano[totalDedKey].orcado), realizado: sumArr(plano[totalDedKey].realizado)};
+  acc['RESULTADO_DO_PLANO'] = {orcado: sumArr(plano.resultadoDoPlano.orcado), realizado: sumArr(plano.resultadoDoPlano.realizado)};
+  plano.acumulado2026 = acc;
+}
+recalcAcumulado(DATA.MI, false);
+recalcAcumulado(DATA.MP, false);
+recalcAcumulado(DATA.PGA, true);
+const DESFAV = '#C1443C';
+const PRODUTO = '#009F90';
+const PETROLEO = '#013742';
+const TEXTO_LIMA = '#6B6E09';
+const PETROLEO_CLARO = shade(PETROLEO, 55); // tom claro derivado do petróleo, apenas para a coluna "Orçado"
+const state = { tab: "MI", monthIdx: 6, mode: "mes" };
+
+function fmtBRL(v){
+  const neg = v < 0;
+  const s = Math.abs(v).toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
+  return (neg? "-R$ " : "R$ ") + s;
+}
+function fmtPct(v){
+  if(v === null || v === undefined || isNaN(v)) return "—";
+  const s = v.toFixed(2).replace('.', ',');
+  return (v>0? "+"+s : s) + "%";
+}
+function fmtPctAbs(v){
+  if(v === null || v === undefined || isNaN(v)) return "—";
+  return Math.abs(v).toFixed(2).replace('.', ',') + "%";
+}
+function fmtRatio(v){
+  if(v === null || v === undefined || isNaN(v)) return "—";
+  return v.toFixed(2).replace('.', ',');
+}
+function sumUpTo(arr, idx){ let s=0; for(let i=0;i<=idx;i++) s+=arr[i]; return s; }
+
+function getSeriesValue(series, idx, mode){
+  if(mode==='mes'){
+    return {orc: series.orcado[idx], real: series.realizado[idx]};
+  } else {
+    return {orc: sumUpTo(series.orcado, idx), real: sumUpTo(series.realizado, idx)};
+  }
+}
+function delta(orc, real){
+  if(!orc) return null;
+  return (real/orc - 1)*100;
+}
+
+function negCls(v){ return (v!==null && v!==undefined && !isNaN(v) && v<0) ? 'neg' : ''; }
+
+/* ===== Tooltip interativo dos gráficos (hover) ===== */
+const tooltipEl = document.getElementById('chartTooltip');
+function positionTooltip(evt){
+  const pad = 16;
+  let left = evt.clientX + pad;
+  let top = evt.clientY + pad;
+  const vw = window.innerWidth, vh = window.innerHeight;
+  if(left + 260 > vw) left = evt.clientX - 260 - 6;
+  if(top + 120 > vh) top = evt.clientY - 120 - 6;
+  tooltipEl.style.left = left + 'px';
+  tooltipEl.style.top = top + 'px';
+}
+function hideTooltip(){ tooltipEl.classList.remove('show'); }
+
+function attachBarTooltips(){
+  document.querySelectorAll('#barChart .bar-hit').forEach(hit=>{
+    hit.addEventListener('mouseenter', (e)=>{
+      const label = hit.dataset.label;
+      const orc = parseFloat(hit.dataset.orc);
+      const real = parseFloat(hit.dataset.real);
+      const dl = hit.dataset.delta === '' ? null : parseFloat(hit.dataset.delta);
+      const tipo = hit.dataset.tipo;
+      tooltipEl.innerHTML = `<span class="tt-title">${label}</span>
+        <div class="tt-row ${tipo==='orcado'?'active':''}"><span>Orçado</span><span>${fmtBRL(orc)}</span></div>
+        <div class="tt-row ${tipo==='realizado'?'active':''}"><span>Realizado</span><span>${fmtBRL(real)}</span></div>
+        <div class="tt-row"><span>Δ% vs. orçado</span><span class="${negCls(dl)}">${fmtPct(dl)}</span></div>`;
+      tooltipEl.classList.add('show');
+      positionTooltip(e);
+    });
+    hit.addEventListener('mousemove', positionTooltip);
+    hit.addEventListener('mouseleave', hideTooltip);
+  });
+}
+
+function attachLineTooltips(){
+  document.querySelectorAll('#pgaOpSection .line-hit').forEach(hit=>{
+    hit.addEventListener('mouseenter', (e)=>{
+      const mes = hit.dataset.mes;
+      const res = parseFloat(hit.dataset.resultado);
+      const op = parseFloat(hit.dataset.operacional);
+      tooltipEl.innerHTML = `<span class="tt-title">${mes}</span>
+        <div class="tt-row"><span>Resultado do período</span><span>${fmtBRL(res)}</span></div>
+        <div class="tt-row active"><span>Resultado operacional</span><span class="${negCls(op)}">${fmtBRL(op)}</span></div>`;
+      tooltipEl.classList.add('show');
+      positionTooltip(e);
+    });
+    hit.addEventListener('mousemove', positionTooltip);
+    hit.addEventListener('mouseleave', hideTooltip);
+  });
+}
+
+function buildMonthButtons(){
+  const box = document.getElementById('monthButtons');
+  box.innerHTML = MESES.map((m,i)=>`<button class="month-btn ${i===state.monthIdx?'active':''}" data-i="${i}">${m}</button>`).join('');
+  box.querySelectorAll('.month-btn').forEach(b=>{
+    b.addEventListener('click', ()=>{ state.monthIdx = parseInt(b.dataset.i); render(); });
+  });
+}
+
+function planoData(){ return DATA[state.tab]; }
+
+function renderKpis(){
+  const d = planoData();
+  const idx = state.monthIdx, mode = state.mode;
+  const isPGA = state.tab === 'PGA';
+
+  const arrecSeries = isPGA ? d.totalReceitas : d.totalArrecadacao;
+  const invSeries = d.resultadoInvestimentos;
+  const resSeries = d.resultadoDoPlano;
+  const dedSeries = isPGA ? d.totalDespesas : d.totalDeducoes;
+
+  const kpis = [];
+  const a = getSeriesValue(arrecSeries, idx, mode);
+  kpis.push({lbl: isPGA?'Receitas totais':'Arrecadação total', ...a, tipo:'receita'});
+  const inv = getSeriesValue(invSeries, idx, mode);
+  kpis.push({lbl:'Resultado dos investimentos', ...inv, tipo:'receita'});
+
+  if(!isPGA){
+    const rt = getSeriesValue(d.deducoes['RESGATE TOTAL'], idx, mode);
+    kpis.push({lbl:'Resgate total', ...rt, tipo:'deducao'});
+    const rp = getSeriesValue(d.deducoes['RESGATE PARCIAL'], idx, mode);
+    kpis.push({lbl:'Resgate parcial', ...rp, tipo:'deducao'});
+  } else {
+    const dd = getSeriesValue(dedSeries, idx, mode);
+    kpis.push({lbl:'Despesas totais', ...dd, tipo:'deducao'});
+    const pessoal = getSeriesValue(d.despesas['PESSOAL E ENCARGOS'], idx, mode);
+    kpis.push({lbl:'Pessoal e encargos', ...pessoal, tipo:'deducao'});
+  }
+  const r = getSeriesValue(resSeries, idx, mode);
+  kpis.push({lbl:'Resultado do plano', ...r, tipo:'receita'});
+
+  const grid = document.getElementById('kpiGrid');
+  grid.innerHTML = kpis.map(k=>{
+    const dl = delta(k.orc, k.real);
+    return `<div class="kpi">
+      <div class="lbl">${k.lbl}</div>
+      <div class="val ${negCls(k.real)}">${fmtBRL(k.real)}</div>
+      <div class="sub ${negCls(dl)}">${fmtPct(dl)} vs. orçado (${fmtBRL(k.orc)})</div>
+    </div>`;
+  }).join('');
+}
+
+function renderBanner(){
+  const d = planoData();
+  const idx = state.monthIdx;
+  // resultado acumulado ate o mes selecionado, para as 3 carteiras
+  function accResult(tab){
+    const s = DATA[tab].resultadoDoPlano;
+    return {orc: sumUpTo(s.orcado, idx), real: sumUpTo(s.realizado, idx)};
+  }
+  const mi = accResult('MI'), mp = accResult('MP'), pga = accResult('PGA');
+  const dMi = delta(mi.orc, mi.real), dMp = delta(mp.orc, mp.real), dPga = delta(pga.orc, pga.real);
+
+  const banner = document.getElementById('banner');
+  banner.innerHTML = `<div class="banner">
+    <h3>Resultado acumulado do plano — jan/26 a ${MESES[idx]}</h3>
+    <p>Posição consolidada de cada carteira em relação ao orçamento aprovado para 2026.</p>
+    <div class="resumo">
+      <div class="item">MI: <b class="${negCls(dMi)}">${fmtPct(dMi)}</b></div>
+      <div class="item">MP: <b class="${negCls(dMp)}">${fmtPct(dMp)}</b></div>
+      <div class="item">PGA: <b class="${negCls(dPga)}">${fmtPct(dPga)}</b></div>
+    </div>
+  </div>`;
+}
+
+function shade(hex, pct){
+  // pct>0 clareia (mistura com branco), pct<0 escurece (mistura com preto)
+  const n = parseInt(hex.slice(1), 16);
+  let r = (n>>16)&255, g=(n>>8)&255, b=n&255;
+  const mix = pct>0 ? 255 : 0;
+  const p = Math.abs(pct)/100;
+  r = Math.round(r + (mix-r)*p);
+  g = Math.round(g + (mix-g)*p);
+  b = Math.round(b + (mix-b)*p);
+  return `rgb(${r},${g},${b})`;
+}
+
+function bar3D(x, y, width, barH, colorFront, dx, dy, meta){
+  // barra 3D HORIZONTAL: cresce da esquerda para a direita, profundidade projetada para cima/direita
+  if(width<=0) width=0.001;
+  const top = shade(colorFront, 30);
+  const side = shade(colorFront, -22);
+  let s = '';
+  // faixa superior (ao longo do comprimento da barra)
+  s += `<polygon points="${x},${y} ${x+dx},${y-dy} ${x+width+dx},${y-dy} ${x+width},${y}" fill="${top}"></polygon>`;
+  // face frontal
+  s += `<rect x="${x}" y="${y}" width="${width}" height="${barH}" fill="${colorFront}"></rect>`;
+  // tampa final (extremidade direita da barra)
+  s += `<polygon points="${x+width},${y} ${x+width+dx},${y-dy} ${x+width+dx},${y+barH-dy} ${x+width},${y+barH}" fill="${side}"></polygon>`;
+
+  if(!meta) return s;
+  // área de contato invisível (cobre toda a barra + a profundidade do 3D) para hover confiável
+  const hitX = x, hitY = y - dy, hitW = width + dx, hitH = barH + dy;
+  const esc = v => String(v).replace(/"/g,'&quot;');
+  s += `<rect class="bar-hit" x="${hitX}" y="${hitY}" width="${hitW}" height="${hitH}" fill="transparent"
+    data-label="${esc(meta.label)}" data-orc="${meta.orc}" data-real="${meta.real}" data-delta="${meta.delta===null?'':meta.delta}" data-tipo="${meta.tipo}"></rect>`;
+  return `<g class="bar-unit">${s}</g>`;
+}
+
+function barChartSVG(rows, title){
+  // rows: [{label, orc, real, tipo}] — gráfico de barras horizontais com efeito 3D
+  const barH = 22, gapBar = 8, rowGap = 28, dx = 9, dy = 9;
+  const padT = 12, padB = 12, padL = 190, padR = 92;
+  const w = 720;
+  const scaleW = w - padL - padR - dx;
+  const groupH = barH*2 + gapBar;
+  const rowStep = groupH + rowGap;
+  const h = padT + rows.length*rowStep - rowGap + padB + dy;
+  const maxAbs = Math.max(1, ...rows.map(r=>Math.max(Math.abs(r.orc), Math.abs(r.real))));
+
+  let svg = `<svg viewBox="0 0 ${w} ${h}" width="100%" height="${h}" preserveAspectRatio="xMinYMid meet">`;
+  svg += `<line x1="${padL}" y1="${padT-4}" x2="${padL}" y2="${h-padB+4-dy}" stroke="var(--linhas)" stroke-width="1.5"></line>`;
+
+  rows.forEach((r,i)=>{
+    const gy = padT + i*rowStep;
+    const orcW = Math.abs(r.orc)/maxAbs*scaleW;
+    const realW = Math.abs(r.real)/maxAbs*scaleW;
+    const dl = delta(r.orc, r.real);
+    const midY = gy + barH + gapBar/2;
+
+    svg += bar3D(padL, gy, orcW, barH, PETROLEO_CLARO, dx, dy, {label:r.label, orc:r.orc, real:r.real, delta:dl, tipo:'orcado'});
+    svg += bar3D(padL, gy+barH+gapBar, realW, barH, PRODUTO, dx, dy, {label:r.label, orc:r.orc, real:r.real, delta:dl, tipo:'realizado'});
+
+    const maxW = Math.max(orcW, realW);
+    svg += `<text x="${padL+maxW+dx+10}" y="${midY+4}" text-anchor="start"
+      class="axis-label" style="font-weight:700;${dl<0?('fill:'+PETROLEO+';'):('fill:'+PRODUTO+';')}">${fmtPct(dl)}</text>`;
+
+    // rótulo da rubrica, à esquerda, em duas linhas se necessário
+    const words = r.label.split(' ');
+    const mid = Math.ceil(words.length/2);
+    const l1 = words.slice(0,mid).join(' ');
+    const l2 = words.slice(mid).join(' ');
+    if(l2){
+      svg += `<text x="${padL-14}" y="${midY-4}" text-anchor="end" class="axis-label">${l1}</text>`;
+      svg += `<text x="${padL-14}" y="${midY+9}" text-anchor="end" class="axis-label">${l2}</text>`;
+    } else {
+      svg += `<text x="${padL-14}" y="${midY+4}" text-anchor="end" class="axis-label">${l1}</text>`;
+    }
+  });
+
+  svg += `</svg>`;
+  return `<div style="overflow-x:auto;">${svg}</div>`;
+}
+
+function renderChart(){
+  const d = planoData();
+  const idx = state.monthIdx, mode = state.mode;
+  const isPGA = state.tab === 'PGA';
+  document.getElementById('chartTitle').textContent =
+    `Orçado × Realizado — ${mode==='mes'? MESES[idx] : 'acumulado até '+MESES[idx]}`;
+  document.getElementById('barLegend').innerHTML =
+    `<span><span class="sw" style="background:${PETROLEO_CLARO};"></span>Orçado</span>
+     <span><span class="sw" style="background:${PRODUTO};"></span>Realizado</span>`;
+
+  const rows = [];
+  const arrecSeries = isPGA ? d.totalReceitas : d.totalArrecadacao;
+  rows.push({label: isPGA?'Receitas totais':'Arrecadação total', ...getSeriesValue(arrecSeries, idx, mode), tipo:'receita'});
+  rows.push({label:'Resultado investimentos', ...getSeriesValue(d.resultadoInvestimentos, idx, mode), tipo:'receita'});
+  if(!isPGA){
+    rows.push({label:'Resgate total', ...getSeriesValue(d.deducoes['RESGATE TOTAL'], idx, mode), tipo:'deducao'});
+    rows.push({label:'Resgate parcial', ...getSeriesValue(d.deducoes['RESGATE PARCIAL'], idx, mode), tipo:'deducao'});
+    rows.push({label:'Deduções totais', ...getSeriesValue(d.totalDeducoes, idx, mode), tipo:'deducao'});
+  } else {
+    rows.push({label:'Pessoal e encargos', ...getSeriesValue(d.despesas['PESSOAL E ENCARGOS'], idx, mode), tipo:'deducao'});
+    rows.push({label:'Serviços de terceiros', ...getSeriesValue(d.despesas['SERVIÇOS DE TERCEIROS'], idx, mode), tipo:'deducao'});
+    rows.push({label:'Despesas totais', ...getSeriesValue(d.totalDespesas, idx, mode), tipo:'deducao'});
+  }
+  rows.push({label:'Resultado do plano', ...getSeriesValue(d.resultadoDoPlano, idx, mode), tipo:'receita'});
+
+  document.getElementById('barChart').innerHTML = barChartSVG(rows);
+  attachBarTooltips();
+}
+
+function renderDetailTable(){
+  const d = planoData();
+  const idx = state.monthIdx, mode = state.mode;
+  const isPGA = state.tab === 'PGA';
+  document.getElementById('detailTitle').textContent =
+    `Detalhamento contábil — ${mode==='mes'? MESES[idx] : 'acumulado até '+MESES[idx]}`;
+
+  let html = '';
+  const blocos = isPGA
+    ? [{t:'Receitas', o:d.receitas, tipo:'receita', total: getSeriesValue(d.totalReceitas, idx, mode)},
+       {t:'Despesas', o:d.despesas, tipo:'deducao', total: getSeriesValue(d.totalDespesas, idx, mode)}]
+    : [{t:'Arrecadação', o:d.arrecadacao, tipo:'receita', total: getSeriesValue(d.totalArrecadacao, idx, mode)},
+       {t:'Deduções', o:d.deducoes, tipo:'deducao', total: getSeriesValue(d.totalDeducoes, idx, mode)}];
+
+  blocos.forEach(b=>{
+    html += `<table class="detail"><thead><tr><th>${b.t}</th><th>Orçado</th><th>Realizado</th><th>Δ%</th></tr></thead><tbody>`;
+    Object.keys(b.o).forEach(nome=>{
+      const v = getSeriesValue(b.o[nome], idx, mode);
+      const dl = delta(v.orc, v.real);
+      html += `<tr><td>${nome}</td><td class="${negCls(v.orc)}">${fmtBRL(v.orc)}</td><td class="${negCls(v.real)}">${fmtBRL(v.real)}</td><td class="${negCls(dl)}">${fmtPct(dl)}</td></tr>`;
+    });
+    const dlt = delta(b.total.orc, b.total.real);
+    html += `<tr><td>TOTAL</td><td class="${negCls(b.total.orc)}">${fmtBRL(b.total.orc)}</td><td class="${negCls(b.total.real)}">${fmtBRL(b.total.real)}</td><td class="${negCls(dlt)}">${fmtPct(dlt)}</td></tr>`;
+    html += `</tbody></table><div style="height:14px;"></div>`;
+  });
+
+  document.getElementById('detailTable').innerHTML = html;
+}
+
+function indicadorLineSVG(periodos, valores, color, esc){
+  const w = 320, h = 128, padL = 30, padR = 8, padT = 10, padB = 20, dx = 4, dy = 5;
+  const scaleW = w - padL - padR - dx;
+  const scaleH = h - padT - padB - dy;
+  const maxV = Math.max(...valores), minV = Math.min(...valores, 0);
+  const range = (maxV - minV) || 1;
+  const pad = range*0.1;
+  const top = maxV + pad, bot = minV - (minV<0?pad:0);
+  const range2 = (top-bot) || 1;
+  const x = i => padL + i*(scaleW/(valores.length-1));
+  const y = v => padT + scaleH - ((v-bot)/range2)*scaleH;
+
+  function pathFrom(p){ return p.map((pt,i)=>(i===0?'M':'L')+pt[0].toFixed(1)+','+pt[1].toFixed(1)).join(' '); }
+  const pts = valores.map((v,i)=>[x(i), y(v)]);
+  const ribbonTop = pathFrom(pts);
+  const ribbonBottom = pts.map(([px,py])=>[px+dx, py+dy]).slice().reverse().map((pt)=>'L'+pt[0].toFixed(1)+','+pt[1].toFixed(1)).join(' ');
+
+  let svg = `<svg viewBox="0 0 ${w} ${h}" width="100%" height="${h}" preserveAspectRatio="xMinYMid meet">`;
+  svg += `<line x1="${padL}" y1="${padT}" x2="${padL}" y2="${padT+scaleH}" stroke="var(--linhas)" stroke-width="1"/>`;
+  svg += `<line x1="${padL}" y1="${padT+scaleH}" x2="${w-padR}" y2="${padT+scaleH}" stroke="var(--linhas)" stroke-width="1"/>`;
+  periodos.forEach((p,i)=>{
+    if(i%3===0 || i===periodos.length-1){
+      svg += `<text x="${x(i).toFixed(1)}" y="${h-4}" text-anchor="middle" font-size="8" class="axis-label">${p.slice(3)}</text>`;
+    }
+  });
+  // fita 3D
+  svg += `<path d="${ribbonTop} ${ribbonBottom} Z" fill="${shade(color,-15)}" opacity=".18"></path>`;
+  svg += `<path d="${ribbonTop}" fill="none" stroke="${color}" stroke-width="2"/>`;
+  pts.forEach(([px,py],i)=>{
+    svg += `<circle cx="${px.toFixed(1)}" cy="${py.toFixed(1)}" r="2.2" fill="${color}"/>`;
+    svg += `<rect class="ind-hit" x="${(px-12).toFixed(1)}" y="${padT}" width="24" height="${scaleH+dy}" fill="transparent"
+      data-periodo="${periodos[i]}" data-valor="${valores[i]}" data-nome="${esc}"></rect>`;
+  });
+  svg += `</svg>`;
+  return svg;
+}
+
+function attachIndicadorTooltips(){
+  document.querySelectorAll('#indicadoresSection .ind-hit').forEach(hit=>{
+    hit.addEventListener('mouseenter', (e)=>{
+      tooltipEl.innerHTML = `<span class="tt-title">${hit.dataset.nome} — ${hit.dataset.periodo}</span>
+        <div class="tt-row active"><span>Valor</span><span>${fmtRatio(parseFloat(hit.dataset.valor))}</span></div>`;
+      tooltipEl.classList.add('show');
+      positionTooltip(e);
+    });
+    hit.addEventListener('mousemove', positionTooltip);
+    hit.addEventListener('mouseleave', hideTooltip);
+  });
+}
+
+function renderIndicadores(){
+  const box = document.getElementById('indicadoresSection');
+  const isPGA = state.tab === 'PGA';
+  const plano = planoData();
+  if(isPGA || !plano.indicadores){ box.innerHTML = ''; return; }
+
+  const ind = plano.indicadores;
+  const nomeCompleto = state.tab === 'MI' ? 'Multi-Instituído' : 'Multi-Patrocinado';
+  const cores = [PETROLEO, PRODUTO, TEXTO_LIMA];
+
+  const header = ind.periodos.map(p=>`<th>${p}</th>`).join('');
+  const linhas = ind.itens.map(it=>{
+    const cels = it.valores.map(v=>`<td>${fmtRatio(v)}</td>`).join('');
+    return `<tr><td>${it.nome}</td><td>${it.formula}</td><td>${it.leitura}</td>${cels}</tr>`;
+  }).join('');
+
+  const graficos = ind.itens.map((it,i)=>{
+    const esc = it.nome.replace(/"/g,'&quot;');
+    return `<div class="ind-chart-box">
+      <h4>${it.nome}</h4>
+      ${indicadorLineSVG(ind.periodos, it.valores, cores[i % cores.length], esc)}
+    </div>`;
+  }).join('');
+
+  box.innerHTML = `<div class="card">
+    <h3>Indicadores de Sustentabilidade Previdencial — Plano ${nomeCompleto}</h3>
+    <div style="overflow-x:auto;">
+      <table class="indicadores">
+        <thead><tr><th>Indicador</th><th>Fórmula</th><th>Leitura gerencial</th>${header}</tr></thead>
+        <tbody>${linhas}</tbody>
+      </table>
+    </div>
+    <div class="ind-charts-grid">${graficos}</div>
+  </div>`;
+  attachIndicadorTooltips();
+}
+
+function lineChartSVG(series1, series2, labels, color1, color2){
+  const w = 900, h = 230, padL = 55, padR = 15, padT = 14, padB = 26;
+  const dx = 5, dy = 6; // profundidade do efeito 3D
+  const all = series1.concat(series2);
+  const maxV = Math.max(...all), minV = Math.min(...all, 0);
+  const range = (maxV - minV) || 1;
+  const scaleW = w - padL - padR;
+  const scaleH = h - padT - padB - dy;
+  const x = i => padL + i*(scaleW/(labels.length-1));
+  const y = v => padT + scaleH - ((v-minV)/range)*scaleH;
+  const zeroY = y(0);
+
+  function pts(series){ return series.map((v,i)=>[x(i), y(v)]); }
+  function pathFrom(p){ return p.map((pt,i)=>(i===0?'M':'L')+pt[0].toFixed(1)+','+pt[1].toFixed(1)).join(' '); }
+  function ribbon(p, color){
+    const top = pathFrom(p);
+    const bottomPts = p.map(([px,py])=>[px+dx, py+dy]);
+    const bottom = bottomPts.slice().reverse().map((pt,i)=>(i===0?'L':'L')+pt[0].toFixed(1)+','+pt[1].toFixed(1)).join(' ');
+    return `<path d="${top} ${bottom} Z" fill="${shade(color,-25)}" opacity=".9"></path>`;
+  }
+
+  const p1 = pts(series1), p2 = pts(series2);
+  let svg = `<svg viewBox="0 0 ${w} ${h+dy}" width="100%" height="${h+dy}" preserveAspectRatio="xMinYMid meet">`;
+  svg += `<line x1="${padL}" y1="${zeroY}" x2="${w-padR}" y2="${zeroY}" stroke="rgba(255,255,255,.25)" stroke-width="1"/>`;
+  labels.forEach((lb,i)=>{
+    if(i%3===0){
+      svg += `<text x="${x(i).toFixed(1)}" y="${h-4}" text-anchor="middle" font-size="9" fill="rgba(255,255,255,.5)">${lb}</text>`;
+    }
+  });
+  // fita 3D da linha "resultado do período" (mais discreta, ao fundo)
+  svg += ribbon(p1, color1);
+  svg += `<path d="${pathFrom(p1)}" fill="none" stroke="${color1}" stroke-width="2" stroke-opacity=".75"/>`;
+  // fita 3D da linha "resultado operacional" (em destaque, na frente)
+  svg += ribbon(p2, color2);
+  svg += `<path d="${pathFrom(p2)}" fill="none" stroke="${color2}" stroke-width="2.4"/>`;
+  series2.forEach((v,i)=>{
+    svg += `<circle cx="${x(i).toFixed(1)}" cy="${y(v).toFixed(1)}" r="2.4" fill="${color2}"/>`;
+  });
+  // áreas de contato invisíveis (uma faixa vertical por mês) para o hover/tooltip
+  const hitW = Math.max(6, (scaleW/(labels.length-1))*0.9);
+  labels.forEach((lb,i)=>{
+    svg += `<rect class="line-hit" x="${(x(i)-hitW/2).toFixed(1)}" y="${padT}" width="${hitW.toFixed(1)}" height="${scaleH+dy}"
+      fill="transparent" data-mes="${lb}" data-resultado="${series1[i]}" data-operacional="${series2[i]}"></rect>`;
+  });
+  svg += `</svg>`;
+  return svg;
+}
+
+function renderPgaOperational(){
+  const box = document.getElementById('pgaOpSection');
+  if(state.tab !== 'PGA'){ box.innerHTML=''; return; }
+  const h = DATA.PGA_HIST;
+  const nMeses = h.meses.length;
+  const positivos = h.resultadoOperacional.filter(v=>v>0).length;
+  const somaOp = h.resultadoOperacional.reduce((a,b)=>a+b,0);
+  const mediaOp = somaOp/nMeses;
+  const ultimos12 = h.resultadoOperacional.slice(-12);
+  const mediaUlt12 = ultimos12.reduce((a,b)=>a+b,0)/12;
+  const somaResultado = h.resultado.reduce((a,b)=>a+b,0);
+  const pctOpSobreResultado = (somaOp/somaResultado*100);
+
+  box.innerHTML = `
+    <div class="pga-op-section">
+      <h2>Visão operacional do PGA — um plano que se sustenta com os recursos atuais</h2>
+      <p class="lead">O Resultado Operacional isola o resultado financeiro dos investimentos (conta 4.05) e o efeito não-caixa
+      da depreciação/amortização, evidenciando a capacidade da própria atividade administrativa — receita de carregamento,
+      taxa de administração e receita seguradora — de cobrir o custeio (pessoal, serviços de terceiros, despesas gerais e
+      tributos) sem depender do resultado dos investimentos. Nos últimos 31 meses (jan/24–jul/26), o PGA fechou
+      <b>${positivos} de ${nMeses}</b> competências com resultado operacional positivo.</p>
+
+      <div class="op-kpis">
+        <div class="op-kpi"><div class="lbl">Meses com resultado operacional positivo</div><div class="val">${positivos}/${nMeses}</div></div>
+        <div class="op-kpi"><div class="lbl">Resultado operacional médio (série completa)</div><div class="val">${fmtBRL(mediaOp)}</div></div>
+        <div class="op-kpi"><div class="lbl">Média dos últimos 12 meses</div><div class="val">${fmtBRL(mediaUlt12)}</div></div>
+        <div class="op-kpi"><div class="lbl">Resultado operacional jul/26</div><div class="val">${fmtBRL(h.resultadoOperacional[nMeses-1])}</div></div>
+      </div>
+
+      <div class="op-chart-box">
+        <div class="op-legend">
+          <span><span class="sw" style="background:rgba(255,255,255,.55);"></span> Resultado do período (com investimentos)</span>
+          <span><span class="sw" style="background:#C5D211;"></span> Resultado operacional (ex-investimentos, ex-depreciação)</span>
+        </div>
+        <div id="pgaLineChart">${lineChartSVG(h.resultado, h.resultadoOperacional, h.meses, '#FFFFFF', '#C5D211')}</div>
+      </div>
+      <p style="font-size:11px;color:rgba(255,255,255,.5);margin:12px 0 0;">
+        Única competência com resultado operacional negativo na série: set/24 (-${Math.abs(5684.63).toLocaleString('pt-BR',{minimumFractionDigits:2})} — pontual).
+        Em ${nMeses-1} das ${nMeses} competências o PGA gerou caixa operacional positivo por conta própria, o que sustenta a leitura
+        de que a estrutura administrativa da Fundação é autossuficiente e não depende do resultado financeiro dos investimentos
+        para se manter equilibrada.</p>
+    </div>`;
+  attachLineTooltips();
+}
+
+function render(){
+  document.querySelectorAll('.tab-btn').forEach(b=> b.classList.toggle('active', b.dataset.tab===state.tab));
+  document.querySelectorAll('.mode-btn').forEach(b=> b.classList.toggle('active', b.dataset.mode===state.mode));
+  buildMonthButtons();
+  document.getElementById('periodoLabel').textContent =
+    state.mode==='mes' ? `Competência: ${MESES[state.monthIdx]}` : `Acumulado: jan/26 a ${MESES[state.monthIdx]}`;
+  renderBanner();
+  renderKpis();
+  renderChart();
+  renderIndicadores();
+  renderDetailTable();
+  renderPgaOperational();
+}
+
+document.querySelectorAll('.tab-btn').forEach(b=>{
+  b.addEventListener('click', ()=>{ state.tab = b.dataset.tab; render(); });
+});
+document.querySelectorAll('.mode-btn').forEach(b=>{
+  b.addEventListener('click', ()=>{ state.mode = b.dataset.mode; render(); });
+});
+
+render();
+</script>
+</body>
+</html>
