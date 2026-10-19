@@ -281,7 +281,7 @@
   .chart-tooltip{position:fixed;pointer-events:none;background:var(--bg-surface-2);color:#fff;border:1px solid var(--linha-glass-forte);
     padding:9px 13px;border-radius:8px;font-family:Arial,Helvetica,sans-serif;font-size:11.5px;
     line-height:1.65;box-shadow:0 10px 28px rgba(0,0,0,.45);z-index:999;opacity:0;
-    transform:translateY(4px);transition:opacity .12s,transform .12s;max-width:250px;}
+    transform:translateY(4px);transition:opacity .12s,transform .12s;max-width:300px;}
   .chart-tooltip.show{opacity:1;transform:translateY(0);}
   .chart-tooltip .tt-title{display:block;font-size:12px;font-weight:700;margin-bottom:5px;
     color:var(--pga);border-bottom:1px solid rgba(255,255,255,.2);padding-bottom:4px;}
@@ -296,6 +296,24 @@
   #ativoChart .bar-unit:hover polygon{opacity:.82;}
   #pgaOpSection .line-hit:hover ~ .hover-marker,
   .hover-marker{pointer-events:none;}
+  /* ---------- avaliação anual ---------- */
+  .anual-kpis{grid-template-columns:repeat(4,1fr);margin-bottom:18px;}
+  @media (max-width:1050px){.anual-kpis{grid-template-columns:repeat(2,1fr);}}
+  @media (max-width:520px){.anual-kpis{grid-template-columns:1fr;}}
+  .anual-kpis .kpi{background:var(--bg-surface-2);}
+  .anual-kpis .lbl{margin-bottom:8px;}
+  table.anual{width:100%;border-collapse:collapse;font-size:11.5px;}
+  table.anual th,table.anual td{padding:7px 9px;border-bottom:1px solid var(--linha-glass);white-space:nowrap;text-align:right;color:var(--texto-alto);font-variant-numeric:tabular-nums;}
+  table.anual th{font-size:10.5px;color:var(--texto-baixo);font-weight:700;border-bottom:1px solid var(--linha-glass-forte);}
+  table.anual td:first-child,table.anual th:first-child{text-align:left;white-space:normal;min-width:240px;color:var(--texto-medio);}
+  table.anual tr.tot td{font-weight:700;border-top:1px solid var(--linha-glass-forte);}
+  table.anual tr.tot td:first-child{color:var(--texto-alto);}
+  table.anual tr.grp td{font-size:10.5px;text-transform:uppercase;letter-spacing:.5px;font-weight:700;color:var(--acento-vivo);padding-top:14px;}
+  table.anual tbody tr:hover td{background:var(--bg-surface-2);}
+  table.anual td.neg,table.anual tr.tot td.neg{color:var(--desfavoravel);}
+  #anualChart .bar-unit,#anualVarChart .bar-unit{cursor:pointer;}
+  #anualChart .bar-unit:hover rect:not(.anual-hit),#anualChart .bar-unit:hover polygon,
+  #anualVarChart .bar-unit:hover rect:not(.anual-hit),#anualVarChart .bar-unit:hover polygon{opacity:.82;}
 </style>
 </head>
 <body>
@@ -374,6 +392,8 @@
     <div id="ativoTable"></div>
   </div>
 
+  <div id="anualSection"></div>
+
   <div id="pgaOpSection"></div>
 
   <footer>Painel gerado a partir do balancete Sicoob Previ</footer>
@@ -383,6 +403,8 @@
 
 <script>
 const DATA = {"meses2026": ["jan/26", "fev/26", "mar/26", "abr/26", "mai/26", "jun/26", "jul/26", "ago/26", "set/26"], "MI": {"arrecadacao": {"PARTICIPANTES - REGULAR": {"orcado": [25820039.29, 26587665.27, 28369872.95, 29080913.98, 29886184.64, 31826163.45, 32365337.93, 33144579.67, 34983376.96], "realizado": [25452564.16, 25194752.87, 25577578.48, 26107183.18, 26269844.4, 26440592.76, 27457384.4, 26939914.15, 27056929.69]}, "PARTICIPANTES - VOLUNTÁRIA": {"orcado": [946180.7, 946180.7, 946180.7, 946180.7, 946180.7, 946180.7, 946180.7, 946180.7, 946180.7], "realizado": [1260098.88, 1979014.72, 1813715.73, 1632211.92, 2131621.29, 3480405.76, 2511310.55, 3163873.97, 1720973.35]}, "CONTRIBUIÇÕES EMPREGADORES": {"orcado": [3603012.12, 3872035.9, 3908190.7, 3944345.5, 3980500.3, 4016655.1, 4052809.9, 4088964.7, 4125119.5], "realizado": [3687004.8, 3709939.27, 3797035.2, 4253808.61, 4255807.6, 4343957.36, 4317994.42, 4303792.29, 4332873.63]}, "CONTRIBUIÇÕES DE RISCOS TERCEIRIZADOS": {"orcado": [1743649.13, 1743915.13, 1744181.13, 1744447.13, 1744713.13, 1744979.13, 1745245.13, 1745511.13, 1745777.13], "realizado": [1677481.36, 1642474.13, 1646863.32, 1601168.47, 1613721.34, 1607680.4, 1581891.43, 1765374.67, 1742781.96]}, "PORTABILIDADE": {"orcado": [1305518.15, 1305518.15, 1305518.15, 1305518.15, 1305518.15, 1305518.15, 1305518.15, 1305518.15, 1305518.15], "realizado": [2111558.06, 2121969.48, 1148146.07, 1170343.34, 2704658.97, 2725986.88, 1898187.44, 2080904.48, 1971228.09]}, "INDENIZAÇÃO DE RISCO TERCEIRIZADO": {"orcado": [49222.76, 49222.76, 49222.76, 49222.76, 49222.76, 49222.76, 49222.76, 49222.76, 49222.76], "realizado": [108545.39, 0.0, 159234.25, 0.0, 0.0, 146004.57, 338262.0, 30456.22, 140915.56]}, "OUTROS": {"orcado": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "realizado": [0.04, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]}}, "totalArrecadacao": {"orcado": [33467622.15, 34504537.91, 36323166.39, 37070628.22, 37912319.68, 39888719.29, 40464314.57, 41279977.11, 43155195.2], "realizado": [34297252.69, 34648150.47, 34142573.05, 34764715.52, 36975653.6, 38744627.73, 38105030.24, 38284315.78, 36965702.28]}, "resultadoInvestimentos": {"orcado": [33862150.44, 33823215.7, 33945006.84, 32822367.6, 31678875.44, 31911681.19, 33978326.25, 31050001.74, 31906666.06], "realizado": [42274705.55, 33871364.53, 40700633.85, 38896697.61, 30311122.82, 34599393.74, 38316421.82, 35376182.99, 40196068.16]}, "arrecadacaoInvestimentos": {"orcado": [67329772.59, 68327753.61, 70268173.23, 69892995.82, 69591195.12, 71800400.48, 74442640.82, 72329978.85, 75061861.26], "realizado": [76571958.24, 68519515.0, 74843206.9, 73661413.13, 67286776.42, 73344021.47, 76421452.06, 73660498.77, 77161770.44]}, "deducoes": {"BENEFÍCIOS DE PRESTAÇÃO CONTINUADA": {"orcado": [-425654.76, -425654.76, -425654.76, -425654.76, -425654.76, -425654.76, -425654.76, -425654.76, -425654.76], "realizado": [-2960018.1, -929177.45, -2012515.39, -549368.96, -785362.1, -1106533.71, -589162.56, -634342.72, -557087.57]}, "BENEFÍCIOS DE PRESTAÇÃO ÚNICA": {"orcado": [-181785.1, -181785.1, -181785.1, -181785.1, -181785.1, -181785.1, -181785.1, -181785.1, -181785.1], "realizado": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]}, "RESGATE TOTAL": {"orcado": [-24303799.89, -24303799.89, -24303799.89, -24303799.89, -24303799.89, -24303799.89, -24303799.89, -24303799.89, -24303799.89], "realizado": [-18504921.9, -24146224.75, -22825324.16, -16773430.58, -27197555.48, -19849006.32, -23780954.75, -23679682.94, -25933343.73]}, "RESGATE PARCIAL": {"orcado": [-2893603.24, -2893603.24, -2893603.24, -2893603.24, -2893603.24, -2893603.24, -2893603.24, -2893603.24, -2893603.24], "realizado": [-891970.23, -1372895.47, -1068836.88, -785752.21, -1962443.81, -1417843.4, -816331.78, -500569.1, -1700155.6]}, "PORTABILIDADE": {"orcado": [-1075395.08, -1075395.08, -1075395.08, -1075395.08, -1075395.08, -1075395.08, -1075395.08, -1075395.08, -1075395.08], "realizado": [-1518252.85, -1779566.69, -271421.17, -1630327.82, -243021.12, -489499.58, -587546.39, -663251.83, -377780.2]}, "REPASSE DE PRÊMIO DE RISCOS TERCEIRIZADOS": {"orcado": [-1743649.13, -1743915.13, -1744181.13, -1744447.13, -1744713.13, -1744979.13, -1745245.13, -1745511.13, -1745777.13], "realizado": [-1677481.36, -1642474.13, -1646863.32, -1601168.47, -1613721.34, -1607680.4, -1581891.43, -1765374.67, -1742781.96]}, "OUTRAS DEDUÇÕES": {"orcado": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "realizado": [-936.78, -817.17, -1039.3, -909.28, -919.3, -479101.29, -114323.17, -76161.57, -44950.77]}, "TAXA DE CARREGAMENTO": {"orcado": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "realizado": [0.0, 0.0, -26.11, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]}, "FUNDOS PREVIDENCIAIS": {"orcado": [-607044.84, -607044.84, -607044.84, -607044.84, -607044.84, -607044.84, -607044.84, -607044.84, -607044.84], "realizado": [-687798.98, -892636.97, -863247.39, -981222.1, -1235294.98, -859686.98, -1357922.24, -1002821.19, -1068030.56]}}, "totalDeducoes": {"orcado": [-31230932.04, -31231198.04, -31231464.04, -31231730.04, -31231996.04, -31232262.04, -31232528.04, -31232794.04, -31233060.04], "realizado": [-26241380.2, -30763792.63, -28689273.72, -22322179.42, -33038318.13, -25809351.68, -28828132.32, -28322204.02, -31424130.39]}, "resultadoDoPlano": {"orcado": [36098840.55, 37096555.57, 39036709.19, 38661265.78, 38359199.08, 40568138.44, 43210112.78, 41097184.81, 43828801.22], "realizado": [50330578.04, 37755722.37, 46153933.18, 51339233.71, 34248458.29, 47534669.79, 47593319.74, 45338294.75, 45737640.05]}, "acumulado2026": {"PARTICIPANTES - REGULAR": {"orcado": 203936177.51, "realizado": 182499900.25}, "PARTICIPANTES - VOLUNTÁRIA": {"orcado": 6623264.9, "realizado": 14808378.85}, "CONTRIBUIÇÕES EMPREGADORES": {"orcado": 27377549.52, "realizado": 28365547.26}, "CONTRIBUIÇÕES DE RISCOS TERCEIRIZADOS": {"orcado": 12211129.91, "realizado": 11371280.45}, "PORTABILIDADE": {"orcado": 9138627.05, "realizado": 13880850.24}, "INDENIZAÇÃO DE RISCO TERCEIRIZADO": {"orcado": 344559.32, "realizado": 752046.21}, "OUTROS": {"orcado": 0.0, "realizado": 0.04}, "TOTAL_ARRECADAÇÃO": {"orcado": 259631308.21, "realizado": 251678003.3}, "RESULTADO_INVESTIMENTOS": {"orcado": 232021623.46, "realizado": 258970339.92}, "ARRECADAÇÃO+INVESTIMENTOS": {"orcado": 491652931.67, "realizado": 510648343.22}, "BENEFÍCIOS DE PRESTAÇÃO CONTINUADA": {"orcado": -2979583.32, "realizado": -8932138.27}, "BENEFÍCIOS DE PRESTAÇÃO ÚNICA": {"orcado": -1272495.7, "realizado": 0.0}, "RESGATE TOTAL": {"orcado": -170126599.23, "realizado": -153077417.94}, "RESGATE PARCIAL": {"orcado": -20255222.68, "realizado": -8316073.78}, "PORTABILIDADE_DED": {"orcado": -7527765.56, "realizado": -6519635.62}, "REPASSE DE PRÊMIO DE RISCOS TERCEIRIZADOS": {"orcado": -12211129.91, "realizado": -11371280.45}, "OUTRAS DEDUÇÕES": {"orcado": 0.0, "realizado": -598046.29}, "TAXA DE CARREGAMENTO": {"orcado": 0.0, "realizado": -26.11}, "FUNDOS PREVIDENCIAIS": {"orcado": -4249313.88, "realizado": -6877809.64}, "TOTAL_DEDUÇÕES": {"orcado": -218622110.28, "realizado": -195692428.1}, "RESULTADO_DO_PLANO": {"orcado": 273030821.39, "realizado": 314955915.12}}, "indicadores": {"periodos": ["31/12/2021", "31/12/2022", "31/12/2023", "31/12/2024", "31/12/2025", "31/01/2026", "28/02/2026", "31/03/2026", "30/04/2026", "31/05/2026", "30/06/2026", "31/07/2026", "31/08/2026", "30/09/2026"], "itens": [{"nome": "Consumo da Arrecadação", "formula": "Total das Deduções ÷ Total da Arrecadação", "leitura": "> 1: pressão elevada sobre o fluxo previdencial · < 1: folga no fluxo previdencial", "valores": [0.4, 0.56, 0.64, 0.68, 0.76, 0.75, 0.8, 0.81, 0.76, 0.78, 0.76, 0.75, 0.75, 0.75]}, {"nome": "Participação do Patrocinador", "formula": "Contribuições dos Empregadores ÷ Total da Arrecadação", "leitura": "> 1: forte participação do patrocinador (cenário ideal) · < 1: risco estrutural de longo prazo", "valores": [0.04, 0.05, 0.07, 0.08, 0.1, 0.11, 0.11, 0.11, 0.11, 0.11, 0.11, 0.11, 0.11, 0.11]}, {"nome": "Índice de Sustentabilidade Previdencial", "formula": "Resultado do Plano sem Investimentos ÷ (Benefícios + Resgates totais)", "leitura": "> 1: autonomia previdencial, plano se sustenta sem investimentos · < 1: dependência estrutural dos investimentos", "valores": [2.01, 0.96, 0.7, 0.58, 0.39, 0.47, 0.32, 0.3, 0.4, 0.35, 0.4, 0.41, 0.42, 0.4]}]}}, "MP": {"arrecadacao": {"CONTRIBUIÇÕES PATROCINADORES": {"orcado": [1793060.45, 1896677.86, 1914761.2, 1932844.54, 1950927.88, 1969011.22, 1987094.56, 2005177.9, 2024165.41], "realizado": [1854579.29, 1816743.97, 1831863.3, 1815140.31, 1879507.14, 2042100.21, 2227861.6, 2071343.34, 1552925.92]}, "CONTRIBUIÇÕES PARTICIPANTES": {"orcado": [2088966.68, 2192584.09, 2210667.43, 2228750.77, 2246834.11, 2264917.45, 2283000.79, 2301084.13, 2320071.64], "realizado": [2152064.12, 2120382.1, 2130377.46, 2114569.88, 2191362.28, 2326996.03, 2556632.52, 2395482.21, 1707032.48]}, "CONTRIBUIÇÕES AUTOPATROCINADOS": {"orcado": [22138.81, 22138.81, 22138.81, 22138.81, 22138.81, 22138.81, 22138.81, 22138.81, 23091.34], "realizado": [16965.87, 18671.4, 20369.3, 21366.52, 19627.43, 21069.36, 19884.95, 20440.03, 20238.46]}, "PORTABILIDADE": {"orcado": [23661.78, 23661.78, 23661.78, 23661.78, 23661.78, 23661.78, 23661.78, 23661.78, 23661.78], "realizado": [16.94, 0.0, 0.0, 76629.83, 0.0, 0.0, 0.0, 0.0, 4113.19]}, "OUTROS": {"orcado": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "realizado": [0.2, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]}}, "totalArrecadacao": {"orcado": [3927827.72, 4135062.54, 4171229.22, 4207395.9, 4243562.58, 4279729.26, 4315895.94, 4352062.62, 4390990.17], "realizado": [4023626.42, 3955797.47, 3982610.06, 4027706.54, 4090496.85, 4390165.6, 4804379.07, 4487265.58, 3284310.05]}, "resultadoInvestimentos": {"orcado": [4137610.33, 4106276.28, 4173577.55, 4021943.42, 3906137.97, 3942637.19, 4216244.76, 3848510.89, 3938034.93], "realizado": [5525438.51, 4278082.09, 4898910.91, 4722495.37, 3547242.07, 4320863.16, 4913554.17, 4472404.82, 5263685.34]}, "arrecadacaoInvestimentos": {"orcado": [8065438.05, 8241338.82, 8344806.77, 8229339.32, 8149700.55, 8222366.45, 8532140.7, 8200573.51, 8329025.1], "realizado": [9549064.93, 8233879.56, 8881520.97, 8750201.91, 7637738.92, 8711028.76, 9717933.24, 8959670.4, 8547995.39]}, "deducoes": {"BENEFÍCIOS DE PRESTAÇÃO CONTINUADA": {"orcado": [-536206.71, -536206.71, -536206.71, -536206.71, -536206.71, -536206.71, -536206.71, -536206.71, -536206.71], "realizado": [-33399.86, -33399.86, -33399.86, -33399.86, -443117.04, -50709.99, -50709.99, -50709.99, -50709.99]}, "BENEFÍCIOS DE PRESTAÇÃO ÚNICA": {"orcado": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "realizado": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]}, "RESGATE TOTAL": {"orcado": [-544819.83, -544819.83, -544819.83, -544819.83, -544819.83, -544819.83, -544819.83, -544819.83, -544819.83], "realizado": [-704611.46, -361276.24, -1344837.55, -578259.81, -775927.14, -1333750.69, -275331.98, -1203495.07, -866761.06]}, "RESGATE PARCIAL": {"orcado": [-1804908.29, -1804908.29, -1804908.29, -1804908.29, -1804908.29, -1804908.29, -1804908.29, -1804908.29, -1804908.29], "realizado": [-838194.87, -289254.69, -145111.34, -380211.47, -172482.47, -496391.74, -357420.87, -267367.67, -144769.41]}, "PORTABILIDADE": {"orcado": [-62017.61, -62017.61, -62017.61, -62017.61, -62017.61, -62017.61, -62017.61, -62017.61, -62017.61], "realizado": [-583612.71, -106117.72, 0.0, -227578.43, 0.0, 0.0, -62488.46, 0.0, 0.0]}, "REPASSE DE PRÊMIO DE RISCOS TERCEIRIZADOS": {"orcado": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "realizado": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]}, "OUTRAS DEDUÇÕES": {"orcado": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "realizado": [-21.01, -19.01, -25.01, -22.97, -21.6, -21.71, -29015.02, -22748.71, -20191.91]}, "TAXA DE CARREGAMENTO": {"orcado": [-87567.58, -92230.37, -93044.12, -93857.87, -94671.62, -95485.37, -96299.12, -97112.87, -97988.74], "realizado": [-90135.09, -88768.71, -89303.11, -88765.39, -91783.03, -98637.2, -107204.94, -99754.5, -72319.76]}, "FUNDOS PREVIDENCIAIS": {"orcado": [-53890.18, -53890.18, -53890.18, -53890.18, -53890.18, -53890.18, -53890.18, -53890.18, -53890.18], "realizado": [-124491.78, -58002.16, -65478.54, -71245.74, -129156.91, -126857.07, -32058.38, -116344.38, -185910.59]}}, "totalDeducoes": {"orcado": [-3089410.2, -3094072.99, -3094886.74, -3095700.49, -3096514.24, -3097327.99, -3098141.74, -3098955.49, -3099831.36], "realizado": [-2374466.78, -936838.39, -1678155.41, -1379483.67, -1612488.19, -2106368.4, -914229.64, -1760420.32, -1340662.72]}, "resultadoDoPlano": {"orcado": [4976027.85, 5147265.83, 5249920.03, 5133638.83, 5053186.31, 5125038.46, 5433998.96, 5101618.02, 5229193.74], "realizado": [7174598.15, 7297041.17, 7203365.56, 7370718.24, 6025250.73, 6604660.36, 8803703.6, 7199250.08, 7207332.67]}, "acumulado2026": {"CONTRIBUIÇÕES PATROCINADORES": {"orcado": 13444377.71, "realizado": 13467795.82}, "CONTRIBUIÇÕES PARTICIPANTES": {"orcado": 15515721.32, "realizado": 15592384.39}, "CONTRIBUIÇÕES AUTOPATROCINADOS": {"orcado": 154971.67, "realizado": 137954.83}, "PORTABILIDADE": {"orcado": 165632.46, "realizado": 76646.77}, "OUTROS": {"orcado": 0.0, "realizado": 0.2}, "TOTAL_ARRECADAÇÃO": {"orcado": 29280703.16, "realizado": 29274782.01}, "RESULTADO_INVESTIMENTOS": {"orcado": 28504427.5, "realizado": 32206586.28}, "ARRECADAÇÃO+INVESTIMENTOS": {"orcado": 57785130.66, "realizado": 61481368.29}, "BENEFÍCIOS DE PRESTAÇÃO CONTINUADA": {"orcado": -3753446.97, "realizado": -678136.46}, "BENEFÍCIOS DE PRESTAÇÃO ÚNICA": {"orcado": 0.0, "realizado": 0.0}, "RESGATE TOTAL": {"orcado": -3813738.81, "realizado": -5373994.87}, "RESGATE PARCIAL": {"orcado": -12634358.03, "realizado": -2679067.45}, "PORTABILIDADE_DED": {"orcado": -434123.27, "realizado": -979797.32}, "REPASSE DE PRÊMIO DE RISCOS TERCEIRIZADOS": {"orcado": 0.0, "realizado": 0.0}, "OUTRAS DEDUÇÕES": {"orcado": 0.0, "realizado": -29146.33}, "TAXA DE CARREGAMENTO": {"orcado": -653156.05, "realizado": -654597.47}, "FUNDOS PREVIDENCIAIS": {"orcado": -377231.26, "realizado": -607290.58}, "TOTAL_DEDUÇÕES": {"orcado": -21666054.39, "realizado": -11002030.48}, "RESULTADO_DO_PLANO": {"orcado": 36119076.27, "realizado": 50479337.81}}, "indicadores": {"periodos": ["31/12/2021", "31/12/2022", "31/12/2023", "31/12/2024", "31/12/2025", "31/01/2026", "28/02/2026", "31/03/2026", "30/04/2026", "31/05/2026", "30/06/2026", "31/07/2026", "31/08/2026", "30/09/2026"], "itens": [{"nome": "Consumo da Arrecadação", "formula": "Total das Deduções ÷ Total da Arrecadação", "leitura": "> 1: pressão elevada sobre o fluxo previdencial · < 1: folga no fluxo previdencial", "valores": [0.36, 0.28, 0.09, 0.15, 0.25, 0.54, 0.37, 0.37, 0.36, 0.35, 0.37, 0.33, 0.33, 0.33]}, {"nome": "Participação do Patrocinador", "formula": "Contribuições dos Empregadores ÷ Total da Arrecadação", "leitura": "> 1: forte participação do patrocinador (cenário ideal) · < 1: risco estrutural de longo prazo", "valores": [0.4, 0.42, 0.45, 0.45, 0.45, 0.46, 0.46, 0.46, 0.46, 0.46, 0.46, 0.46, 0.46, 0.46]}, {"nome": "Índice de Sustentabilidade Previdencial", "formula": "Resultado do Plano sem Investimentos ÷ (Benefícios + Resgates totais)", "leitura": "> 1: autonomia previdencial, plano se sustenta sem investimentos · < 1: dependência estrutural dos investimentos", "valores": [2.04, 2.99, 13.1, 7.61, 4.74, 2.52, 4.55, 3.0, 3.33, 3.33, 2.93, 3.51, 3.3, 3.2]}]}}, "PGA": {"receitas": {"RECEITA DE CARREGAMENTO": {"orcado": [87567.58, 92230.37, 93044.12, 93857.87, 94671.62, 95485.37, 96299.12, 97112.87, 97988.74], "realizado": [90135.09, 88768.71, 89329.22, 88765.39, 91783.03, 98637.2, 107204.94, 99754.5, 72319.76]}, "INVESTIMENTOS (TAXA DE ADMINISTRAÇÃO)": {"orcado": [518222.43, 449399.43, 555753.37, 511206.16, 517060.74, 548938.65, 607936.79, 561594.13, 567689.34], "realizado": [528352.92, 459101.97, 568883.76, 525729.87, 532689.37, 565999.02, 628934.67, 582705.09, 590481.51]}, "RECEITA SEGURADORA": {"orcado": [524549.87, 524549.87, 524549.87, 549074.96, 549074.96, 549074.96, 549074.96, 549074.96, 549074.96], "realizado": [524549.87, 524549.87, 524549.87, 544547.47, 544547.47, 544547.47, 544547.47, 544547.47, 544547.47]}, "OUTRAS RECEITAS": {"orcado": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "realizado": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]}}, "resultadoInvestimentos": {"orcado": [222553.08, 208715.94, 187158.99, 173819.93, 175258.15, 178447.05, 196568.38, 177593.09, 177505.55], "realizado": [236656.62, 214738.36, 221413.41, 210950.14, 202085.39, 198008.72, 255610.57, 242408.75, 258762.48]}, "totalReceitas": {"orcado": [1352892.96, 1274895.61, 1360506.35, 1327958.92, 1336065.47, 1371946.03, 1449879.25, 1385375.05, 1392258.59], "realizado": [1379694.5, 1287158.91, 1404176.26, 1369992.87, 1371105.26, 1407192.41, 1536297.65, 1469415.81, 1466111.22]}, "despesas": {"PESSOAL E ENCARGOS": {"orcado": [-480570.86, -504364.37, -513410.24, -466015.11, -475105.34, -482999.74, -457682.07, -465175.78, -559253.49], "realizado": [-433590.25, -450801.09, -456487.46, -458520.67, -421515.49, -457113.7, -455198.49, -350183.34, -464881.94]}, "TREINAMENTOS/CONGRESSOS E SEMINÁRIOS": {"orcado": [-5309.16, -5309.16, -24329.16, -8309.16, -5309.16, -11512.69, -9512.69, -9512.69, -5309.16], "realizado": [0.0, 0.0, 0.0, 0.0, -3880.0, 0.0, -4431.0, -325.0, 0.0]}, "VIAGENS E ESTADIAS": {"orcado": [-1000.0, -1000.0, -5100.0, -1000.0, -1000.0, -11100.0, -13050.0, -5100.0, -7000.0], "realizado": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1786.69]}, "SERVIÇOS DE TERCEIROS": {"orcado": [-446490.09, -404319.91, -469423.28, -442118.45, -445678.0, -465168.77, -501259.14, -473133.25, -476838.67], "realizado": [-406755.07, -368028.73, -421217.75, -416077.03, -387221.34, -444782.76, -649900.66, -505260.06, -465397.58]}, "DESPESAS GERAIS": {"orcado": [-40460.64, -40460.64, -90460.64, -40460.64, -40460.64, -90960.64, -40460.64, -40460.64, -90834.64], "realizado": [-34060.94, -34190.1, -85325.25, -34663.57, -34435.41, -98710.77, -38794.25, -34364.77, -85843.38]}, "DEPRECIAÇÕES E AMORTIZAÇÕES": {"orcado": [-78413.96, -79551.86, -80689.76, -81827.66, -83698.06, -84835.95, -85973.85, -87111.75, -88249.65], "realizado": [-81740.43, -83142.58, -84267.63, -86351.03, -85594.16, -87085.68, -82130.4, -90906.41, -89607.95]}, "TRIBUTOS": {"orcado": [-85909.53, -82282.65, -86263.53, -84750.09, -85127.04, -86795.49, -90419.39, -87419.94, -87740.02], "realizado": [-87155.79, -82852.89, -88294.19, -86704.67, -86756.39, -88434.44, -94437.84, -91327.85, -91174.17]}, "CONSTITUIÇÕES/REVERSÕES DE PROVISÕES CONTINGENCIAIS": {"orcado": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "realizado": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -103715.82]}, "OUTRAS DESPESAS": {"orcado": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "realizado": [0.0, 0.0, 0.0, -18631.25, -12261.27, -555.32, 0.0, 0.0, 0.0]}}, "totalDespesas": {"orcado": [-1138154.24, -1117288.59, -1269676.61, -1124481.11, -1136378.24, -1233373.28, -1198357.78, -1167914.05, -1315225.63], "realizado": [-1043302.48, -1019015.39, -1135592.28, -1100948.22, -1031664.06, -1176682.67, -1324892.64, -1072367.43, -1302407.53]}, "resultadoDoPlano": {"orcado": [214738.72, 157607.02, 90829.74, 203477.81, 199687.23, 138572.75, 251521.47, 217461.0, 77032.96], "realizado": [336392.02, 268143.52, 268583.98, 269044.65, 339441.2, 230509.74, 211405.01, 397048.38, 163703.69]}, "acumulado2026": {"RECEITA DE CARREGAMENTO": {"orcado": 653156.05, "realizado": 654623.58}, "INVESTIMENTOS (TAXA DE ADMINISTRAÇÃO)": {"orcado": 3708517.57, "realizado": 3809691.58}, "RECEITA SEGURADORA": {"orcado": 3769949.45, "realizado": 3751839.49}, "OUTRAS RECEITAS": {"orcado": 0.0, "realizado": 0.0}, "RESULTADO_INVESTIMENTOS": {"orcado": 1342521.52, "realizado": 1539463.21}, "TOTAL_RECEITAS": {"orcado": 9474144.59, "realizado": 9755617.86}, "PESSOAL E ENCARGOS": {"orcado": -3380147.73, "realizado": -3133227.15}, "TREINAMENTOS/CONGRESSOS E SEMINÁRIOS": {"orcado": -69591.18, "realizado": -8311.0}, "VIAGENS E ESTADIAS": {"orcado": -33250.0, "realizado": 0.0}, "SERVIÇOS DE TERCEIROS": {"orcado": -3174457.64, "realizado": -3093983.34}, "DESPESAS GERAIS": {"orcado": -383724.48, "realizado": -360180.29}, "DEPRECIAÇÕES E AMORTIZAÇÕES": {"orcado": -574991.1, "realizado": -590311.91}, "TRIBUTOS": {"orcado": -601547.72, "realizado": -614636.21}, "CONSTITUIÇÕES/REVERSÕES DE PROVISÕES CONTINGENCIAIS": {"orcado": 0.0, "realizado": 0.0}, "OUTRAS DESPESAS": {"orcado": 0.0, "realizado": -31447.84}, "TOTAL_DESPESAS": {"orcado": -8217709.85, "realizado": -7832097.74}, "RESULTADO_DO_PLANO": {"orcado": 1256434.74, "realizado": 1923520.12}}}, "PGA_HIST": {"meses": ["jan/24", "fev/24", "mar/24", "abr/24", "mai/24", "jun/24", "jul/24", "ago/24", "set/24", "out/24", "nov/24", "dez/24", "jan/25", "fev/25", "mar/25", "abr/25", "mai/25", "jun/25", "jul/25", "ago/25", "set/25", "out/25", "nov/25", "dez/25", "jan/26", "fev/26", "mar/26", "abr/26", "mai/26", "jun/26", "jul/26", "ago/26", "set/26"], "receitasTotais401": [971646.79, 903153.63, 950842.14, 989050.88, 977600.6, 960089.61, 1029308.93, 1012210.3, 973143.99, 1071831.84, 972013.09, 1082810.67, 1057709.53, 1007474.81, 990485.93, 1037304.08, 1076555.97, 1055032.18, 1144781.81, 1085163.35, 1131499.98, 1157774.69, 1072279.7, 1237598.29, 1143037.88, 1072420.55, 1182762.85, 1159042.73, 1169019.87, 1209183.69, 1280687.08, 1227007.06, 1207348.74], "resultadoInvestimentos405": [-131816.66, -120846.43, -101576.76, -91560.6, -124539.05, -95153.1, -156814.52, -149447.29, -117370.75, -136001.86, -122989.44, -114285.11, -188631.79, -163507.06, -148258.51, -180900.33, -178176.55, -173341.63, -187907.94, -203423.11, -209640.85, -239323.97, -209222.29, -236116.46, -236656.62, -214738.36, -221413.41, -210950.14, -202085.39, -198008.72, -255610.57, -242408.75, -258762.48], "totalReceita": [839830.13, 782307.2, 849265.38, 897490.28, 853061.55, 864936.51, 872494.41, 862763.01, 855773.24, 935829.98, 849023.65, 968525.56, 869077.74, 843967.75, 842227.42, 856403.75, 898379.42, 881690.55, 956873.87, 881740.24, 921859.13, 918450.72, 863057.41, 1001481.83, 906381.26, 857682.19, 961349.44, 948092.59, 966934.48, 1011174.97, 1025076.51, 984598.31, 948586.26], "despesasTotais402": [-1021567.09, -912623.73, -980292.0, -962544.63, -956379.18, -999426.48, -1003088.15, -999814.4, -1029088.73, -1036502.64, -950255.72, -1030595.67, -1089761.3, -982635.89, -981595.69, -967611.73, -1018995.35, -1066366.48, -1020033.64, -974672.44, -1153215.36, -1054775.06, -1036944.25, -1137156.25, -1043302.48, -1019015.39, -1135592.28, -1100948.22, -1031664.06, -1176682.67, -1324892.64, -1072367.43, -1198691.71], "depreciacaoAmortizacao": [50763.09, 51346.83, 51937.06, 52543.78, 53285.4, 54125.93, 55679.18, 65104.43, 50260.11, 59848.23, 61463.35, 63039.86, 64804.58, 65222.5, 66362.54, 67839.02, 68839.72, 70592.22, 72454.92, 73951.56, 75682.2, 76783.33, 78386.3, 79838.54, 81740.43, 83142.58, 84267.63, 86351.03, 85594.16, 87085.68, 82130.4, 90906.41, 89607.95], "totalDespesas": [-970804.0, -865404.44, -928426.2, -910046.73, -903147.53, -945358.53, -947458.17, -934759.84, -978860.73, -976714.49, -888858.89, -967609.94, -1025018.22, -907953.75, -915233.15, -899772.71, -950155.63, -995774.26, -947578.72, -900720.88, -1077533.16, -977991.73, -958557.95, -1057317.71, -961562.05, -935872.81, -1051324.65, -1014597.19, -946069.9, -1089596.99, -1242762.24, -981461.02, -1212799.58], "resultado": [81896.36, 111376.33, 72126.9, 118066.85, 145760.47, 55816.23, 183035.3, 161843.19, 61426.01, 171331.06, 144746.81, 166500.11, 156580.02, 188345.98, 157148.75, 250592.68, 235737.17, 162007.33, 312656.11, 313914.02, 187925.47, 342323.6, 244557.74, 336558.5, 336392.02, 268143.52, 268583.98, 269044.65, 339441.2, 230509.74, 211405.01, 397048.38, 163703.69], "resultadoOperacional": [842.79, 37749.19, 22415.94, 79004.15, 74453.07, 14731.08, 81850.76, 77450.46, -5716.74, 95117.35, 83154.2, 115200.73, 32691.31, 99521.06, 75252.78, 137531.37, 126400.34, 59257.92, 197203.09, 184442.47, 53966.82, 179782.96, 113721.75, 180280.58, 181475.83, 136547.74, 131438.2, 144445.54, 222949.97, 119586.7, 37924.84, 245546.04, -5450.84]}, "ATIVOS": {"MI": {"periodos": ["dez/17", "dez/18", "dez/19", "dez/20", "dez/21", "dez/22", "dez/23", "dez/24", "dez/25", "set/26"], "valores": [571115740.23, 804071169.86, 1060733607.33, 1298555303.23, 1577751082.52, 1906854879.81, 2307008245.88, 2627981700.41, 3107867201.57, 3524115457.85], "variacaoPct": [null, 40.79, 31.92, 22.42, 21.5, 20.86, 20.98, 13.91, 18.26, 13.39], "variacaoRS": [null, 232955429.63, 256662437.47, 237821695.9, 279195779.29, 329103797.29, 400153366.07, 320973454.53, 479885501.16, 416248256.28]}, "MP": {"periodos": ["dez/17", "dez/18", "dez/19", "dez/20", "dez/21", "dez/22", "dez/23", "dez/24", "dez/25", "set/26"], "valores": [78371400.71, 95119465.41, 118163050.68, 137363515.57, 155261995.52, 190154664.97, 251467069.28, 309243432.97, 391690835.6, 459241708.19], "variacaoPct": [null, 21.37, 24.23, 16.25, 13.03, 22.47, 32.24, 22.98, 26.66, 17.25], "variacaoRS": [null, 16748064.7, 23043585.27, 19200464.89, 17898479.95, 34892669.45, 61312404.31, 57776363.69, 82447402.63, 67550872.59]}, "PGA": {"periodos": ["dez/17", "dez/18", "dez/19", "dez/20", "dez/21", "dez/22", "dez/23", "dez/24", "dez/25", "set/26"], "valores": [9349645.46, 9691557.21, 10235860.9, 10934323.74, 12662478.98, 14366652.17, 16684821.44, 19062488.87, 22592171.03, 25029818.84], "variacaoPct": [null, 3.66, 5.62, 6.82, 15.8, 13.46, 16.14, 14.25, 18.52, 10.79], "variacaoRS": [null, 341911.75, 544303.69, 698462.84, 1728155.24, 1704173.19, 2318169.27, 2377667.43, 3529682.16, 2437647.81]}}, "ATIVOS_2026": {"MP": {"orcado": [375935280.07, 381082545.9, 386332465.94, 391466104.77, 396519291.08, 401644329.54, 407078328.5, 412179946.52, 417409140.25], "realizado": [387077623.16, 394316297.42, 401710204.46, 409108055.38, 415273746.51, 422156816.74, 430771036.56, 438216389.31, 445554173.84]}, "MI": {"orcado": [3108993568.62, 3145431954.17, 3182381537.46, 3218571779.83, 3254026415.95, 3290123699.63, 3328534646.52, 3364413947.51, 3401557466.54], "realizado": [3154321441.05, 3193684873.44, 3240683993.66, 3291771767.08, 3329150770.46, 3376857516.36, 3426446784.25, 3472935218.05, 3519700878.21]}, "PGA": {"orcado": [19158951.37, 15959271.96, 16165831.9, 16484207.91, 16800663.75, 17055710.13, 17428245.91, 17765889.2, 17966881.73], "realizado": [20122461.17, 17550106.87, 18027382.31, 18626278.65, 19068151.04, 19728428.67, 20402378.94, 21279521.75, 21856064.24]}}};
+// Série anual (exercícios 2020–2025 + acumulado jan–set/2026): apenas rubricas; totais, resultados e variações são calculados em calcAnual()
+DATA.ANUAL = {"periodos": ["31/12/2020", "31/12/2021", "31/12/2022", "31/12/2023", "31/12/2024", "31/12/2025", "30/09/2026"], "rotulos": ["2020", "2021", "2022", "2023", "2024", "2025", "jan–set/26"], "MI": {"arrecadacao": {"PARTICIPANTES - REGULAR": [239122365.36, 253387970.0, 270344311.85, 282437697.37, 289674142.07, 301195176.29, 236496744.09], "PARTICIPANTES - VOLUNTÁRIA": [0.0, 17705781.17, 25487506.69, 21203738.43, 25517971.54, 32085148.77, 19693226.17], "CONTRIBUIÇÕES EMPREGADORES": [12831632.48, 15835342.13, 18448028.85, 24154632.27, 32903110.98, 41477264.56, 37002213.18], "CONTRIBUIÇÕES DE RISCOS TERCEIRIZADOS": [0.0, 19171786.29, 19740644.99, 19518665.48, 19350070.24, 19932844.29, 14879437.08], "PORTABILIDADE": [32469931.72, 49562911.88, 31075874.77, 20018846.73, 20986213.92, 35804141.13, 17932982.81], "INDENIZAÇÃO DE RISCO TERCEIRIZADO": [0.0, 4730803.56, 5098154.3, 2544493.19, 2423246.73, 4133298.2, 923417.99], "OUTROS": [3.64, 135.34, 2329.74, 0.0, 422.88, 530.45, 0.04]}, "resultadoInvestimentos": [34745718.88, 63760291.2, 166379920.04, 266110459.24, 197141834.36, 371688066.43, 334542591.07], "deducoes": {"BENEFÍCIOS DE PRESTAÇÃO CONTINUADA": [-2304061.24, -3353173.77, -5831340.27, -5896117.27, -6501865.89, -6358455.03, -10123568.56], "BENEFÍCIOS DE PRESTAÇÃO ÚNICA": [-709435.09, -1491170.67, -2162582.13, -2123211.92, -1660370.26, -2526363.76, 0.0], "RESGATE TOTAL": [-77285545.01, -107246731.91, -168263085.2, -189041047.4, -216038786.48, -271359013.4, -202690444.61], "RESGATE PARCIAL": [0.0, -4870857.99, -6748109.77, -9411613.17, -12860655.51, -14680581.46, -10516798.48], "PORTABILIDADE": [-2585586.97, -8064619.11, -5134022.66, -11429939.83, -5941335.48, -13633649.39, -7560667.65], "REPASSE DE PRÊMIO DE RISCOS TERCEIRIZADOS": [0.0, -19171786.29, -19740644.99, -19518665.48, -19350070.24, -19932844.29, -14879437.08], "OUTRAS DEDUÇÕES": [-1520.26, -751042.47, -325354.79, -82.29, -3753616.18, -79095.17, -719158.63], "TAXA DE CARREGAMENTO": [-901235.45, -1075292.76, -1178421.59, -759461.56, 7747.83, -1271.12, -26.11], "FUNDOS PREVIDENCIAIS": [-471383.6, -35766.22, -1765090.15, -2288089.53, 1135093.6, -7693768.34, -8948661.39]}, "ativoInvestido": [1296561598.54, 1575213324.46, 1903826041.45, 2303567098.96, 2623831978.22, 3103430354.72, 3518780704.78]}, "MP": {"arrecadacao": {"CONTRIBUIÇÕES PATROCINADORES": [8675331.0, 8502630.51, 11142470.34, 16352277.76, 19237478.0, 21788703.94, 17092065.08], "CONTRIBUIÇÕES PARTICIPANTES": [12802406.35, 12304295.3, 15092635.51, 19774708.72, 22844205.76, 26191135.16, 19694899.08], "CONTRIBUIÇÕES AUTOPATROCINADOS": [251124.42, 266946.97, 232932.71, 220026.6, 241408.11, 256926.69, 178633.32], "PORTABILIDADE": [112134.07, 79275.22, 197139.87, 74618.0, 163871.33, 198795.36, 80759.96], "OUTROS": [0.0, 0.0, 0.0, 0.0, 0.0, 7.74, 0.2]}, "resultadoInvestimentos": [3658312.38, 4717703.7, 15381715.76, 27536613.84, 21070210.42, 45351044.4, 41942676.44], "deducoes": {"BENEFÍCIOS DE PRESTAÇÃO CONTINUADA": [-110799.87, -164524.06, -157791.71, -173017.8, -298802.93, -421973.38, -779556.44], "BENEFÍCIOS DE PRESTAÇÃO ÚNICA": [-7857.39, -19266.1, 0.0, -3071.34, -480973.75, -26705.53, 0.0], "RESGATE TOTAL": [-5629564.13, -6436695.12, -6267755.46, -2481768.72, -4629045.75, -7396322.69, -7444251.0], "RESGATE PARCIAL": [0.0, 0.0, 0.0, 0.0, 0.0, -3908088.26, -3091204.53], "PORTABILIDADE": [-416279.18, -942628.04, -922121.84, -444059.72, -909704.22, -572013.4, -979797.32], "OUTRAS DEDUÇÕES": [0.0, -445.24, 0.0, -0.06, -0.03, -1837.11, -72086.95], "TAXA DE CARREGAMENTO": [-484990.94, -471901.12, -577622.49, -802440.72, -935048.24, -1063847.83, -826671.73], "FUNDOS PREVIDENCIAIS": [7095.12, -598314.46, -630571.67, 34439.28, -98961.93, -903272.34, -909545.55]}, "ativoInvestido": [130880300.32, 148539134.15, 182645223.51, 242700894.37, 299192190.55, 379639514.03, 442692806.72]}, "PGA": {"receitas": {"GESTÃO PREVIDENCIAL": [1386226.39, 1547193.88, 1756044.08, 1561902.28, 974520.59, 1065119.45, 826697.84], "INVESTIMENTOS (TAXA DE ADMINISTRAÇÃO)": [2154942.98, 2859734.29, 3459948.09, 4167355.53, 4990228.99, 5757446.3, 4982878.18], "DIRETAS": [4385317.8, 4800180.0, 5287279.4, 5643340.16, 5928573.29, 6218857.83, 4840934.43], "OUTRAS RECEITAS": [2.18, 8000.0, 157.17, 17628.88, 379.6, 12236.74, 0.0]}, "resultadoInvestimentos": [279769.78, 422595.45, 1146011.62, 1583830.39, 1462401.57, 2318450.49, 2040634.44], "despesas": {"PESSOAL E ENCARGOS": [-4246091.24, -4670857.15, -5298367.51, -5245929.58, -5264127.51, -5358798.82, -3948292.43], "TREINAMENTOS/CONGRESSOS E SEMINÁRIOS": [-19293.15, -35641.2, -37837.22, -38999.51, -38412.66, -8070.88, -8636.0], "VIAGENS E ESTADIAS": [-15783.73, -1376.06, -21746.8, -4170.69, -24216.88, -16820.31, -1786.69], "SERVIÇOS DE TERCEIROS": [-2298544.78, -2755912.41, -3390186.57, -3869011.15, -4397819.53, -4591843.16, -4064640.98], "DESPESAS GERAIS": [-538965.3, -637718.09, -592969.52, -748878.65, -603145.76, -658535.05, -480388.44], "DEPRECIAÇÕES E AMORTIZAÇÕES": [-120130.47, -110727.9, -451704.9, -544678.18, -669397.25, -860757.43, -770826.27], "TRIBUTOS": [-492370.1, -578653.22, -672198.97, -818293.66, -885058.83, -986803.15, -797138.23], "CONSTITUIÇÕES/REVERSÕES DE PROVISÕES CONTINGENCIAIS": [-1899.44, -64853.83, -9908.96, -14745.93, -4668.32, 4668.32, -103715.82], "OUTRAS DESPESAS": [0.0, 0.0, 0.0, 0.0, 0.0, -6864.46, -31447.84]}, "ativoInvestido": [9904607.58, 10626692.98, 12128970.85, 14398148.66, 16343772.05, 19643336.33, 21838458.79]}};
 const MESES = DATA.meses2026;
 
 // Recalcula acumulado2026 sempre a partir dos arrays mensais (fonte única da verdade),
@@ -1098,7 +1120,7 @@ function renderPgaOperational(){
       + negs.map(x=>`${x.m} (-${fm(x.v)})`).join(', ') + (negs.length>1?' — pontuais.':' — pontual.');
   box.innerHTML = `
     <div class="pga-op-section">
-      <h2><span class="sec-badge">05</span> Visão operacional do PGA — um plano que se sustenta com os recursos atuais</h2>
+      <h2><span class="sec-badge">06</span> Visão operacional do PGA — um plano que se sustenta com os recursos atuais</h2>
       <p class="lead">O Resultado Operacional isola o resultado financeiro dos investimentos (conta 4.05) e o efeito não-caixa
       da depreciação/amortização, evidenciando a capacidade da própria atividade administrativa — receita de carregamento,
       taxa de administração e receita seguradora — de cobrir o custeio (pessoal, serviços de terceiros, despesas gerais e
@@ -1128,6 +1150,242 @@ function renderPgaOperational(){
   attachLineTooltips();
 }
 
+const PETROLEO_CLARO = shade(PETROLEO, 55); // mesmo tom derivado usado no "Orçado"
+function corTextoForte(){ return isLight() ? PETROLEO : '#FFFFFF'; }
+function corSerie2(){ return isLight() ? PETROLEO : '#FFFFFF'; }
+function larguraAnual(){ const el = document.getElementById('anualSection'); const cw = el ? el.clientWidth - 46 : 0; return Math.max(640, Math.round(cw || 1100)); }
+/* ===== Avaliação anual (2020 a set/26) — totais, resultado operacional e % sempre calculados aqui ===== */
+function calcAnual(tab){
+  const a = DATA.ANUAL[tab];
+  const isPGA = tab === 'PGA';
+  const n = DATA.ANUAL.periodos.length;
+  const rk = isPGA ? 'receitas' : 'arrecadacao';
+  const dk = isPGA ? 'despesas' : 'deducoes';
+  const somaGrupo = (g,i) => Object.values(g).reduce((s,arr)=>s+arr[i],0);
+  const out = {totRec:[], inv:[], totDed:[], res:[], dep:[], op:[], pct:[], ativo:a.ativoInvestido, ret:[], arrBase:[], benBase:[]};
+  for(let i=0;i<n;i++){
+    const inv = a.resultadoInvestimentos[i];
+    const rec = somaGrupo(a[rk], i) + (isPGA ? inv : 0);   // PGA: total da receita inclui o resultado dos investimentos
+    const ded = somaGrupo(a[dk], i);
+    const res = isPGA ? rec + ded : rec + inv + ded;
+    const dep = isPGA ? -a.despesas['DEPRECIAÇÕES E AMORTIZAÇÕES'][i] : 0;
+    const op = res - inv + dep;
+    out.totRec.push(rec); out.inv.push(inv); out.totDed.push(ded); out.res.push(res); out.dep.push(dep); out.op.push(op);
+    out.pct.push(res ? op/res*100 : null);
+    out.ret.push(i===0 ? null : inv / ((a.ativoInvestido[i-1]+a.ativoInvestido[i])/2) * 100);
+    // base da variação: MI/MP = arrecadação total e benefícios (continuada + única); PGA = receitas administrativas e despesas totais
+    out.arrBase.push(isPGA ? rec - inv : rec);
+    out.benBase.push(isPGA ? -ded : -(a.deducoes['BENEFÍCIOS DE PRESTAÇÃO CONTINUADA'][i] + a.deducoes['BENEFÍCIOS DE PRESTAÇÃO ÚNICA'][i]));
+  }
+  // último período é parcial (jan até o mês da data-base): variação contra o exercício anterior com anualização linear
+  const mesesUlt = parseInt(DATA.ANUAL.periodos[n-1].slice(3,5), 10);
+  out.mesesUlt = mesesUlt;
+  const variar = arr => arr.map((v,i)=>{
+    if(i===0) return {pct:null, rs:null};
+    const atual = i===n-1 ? v*12/mesesUlt : v;
+    return {pct: arr[i-1] ? (atual/arr[i-1]-1)*100 : null, rs: atual - arr[i-1]};
+  });
+  out.arrVar = variar(out.arrBase); out.benVar = variar(out.benBase);
+  const cagr = arr => (arr[0]>0 && arr[n-2]>0) ? (Math.pow(arr[n-2]/arr[0], 1/(n-2))-1)*100 : null;
+  out.arrCagr = cagr(out.arrBase); out.benCagr = cagr(out.benBase);
+  return out;
+}
+
+function colBar3D(x, yBase, w, hgt, color, dx, dy, meta){
+  // coluna 3D vertical: face frontal + lateral direita + face superior (tons derivados via shade)
+  const hh = Math.max(Math.abs(hgt), 0.001);
+  const yTop = hgt >= 0 ? yBase - hh : yBase;
+  const top = shade(color, 30), side = shade(color, -22);
+  let s = '';
+  s += `<polygon points="${x+w},${yTop+hh} ${x+w+dx},${yTop+hh-dy} ${x+w+dx},${yTop-dy} ${x+w},${yTop}" fill="${side}"></polygon>`;
+  s += `<rect x="${x}" y="${yTop}" width="${w}" height="${hh}" fill="${color}"></rect>`;
+  s += `<polygon points="${x},${yTop} ${x+dx},${yTop-dy} ${x+w+dx},${yTop-dy} ${x+w},${yTop}" fill="${top}"></polygon>`;
+  s += `<rect class="anual-hit" x="${x}" y="${yTop-dy}" width="${w+dx}" height="${hh+dy}" fill="transparent"
+    data-i="${meta.i}" data-serie="${meta.serie}" data-nome="${meta.nome||''}"></rect>`;
+  return `<g class="bar-unit">${s}</g>`;
+}
+
+function anualChartSVG(c, rotulos, corOp){
+  const w = larguraAnual(), padL = 20, padR = 20, padT = 34, padB = 34, dx = 9, dy = 9;
+  const scaleH = 210;
+  const h = padT + scaleH + padB + dy;
+  const groupW = (w - padL - padR) / rotulos.length;
+  const barW = Math.min(32, groupW*0.28), gap = 8;
+  const vals = c.op.concat(c.inv);
+  const maxV = Math.max(0, ...vals), minV = Math.min(0, ...vals);
+  const range = (maxV - minV) || 1;
+  const yBase = padT + dy + (maxV/range)*scaleH;
+  const k = scaleH / range;
+
+  let svg = `<svg viewBox="0 0 ${w} ${h}" width="100%" height="${h}" preserveAspectRatio="xMinYMid meet">`;
+  svg += `<line x1="${padL}" y1="${yBase}" x2="${w-padR}" y2="${yBase}" stroke="${gridStroke()}" stroke-width="1.5"></line>`;
+  rotulos.forEach((r,i)=>{
+    const gx = padL + i*groupW + (groupW - (barW*2 + gap + dx))/2;
+    svg += colBar3D(gx, yBase, barW, c.op[i]*k, corOp, dx, dy, {i, serie:'op'});
+    svg += colBar3D(gx+barW+gap, yBase, barW, c.inv[i]*k, PETROLEO_CLARO, dx, dy, {i, serie:'inv'});
+    const topo = yBase - Math.max(0, c.op[i], c.inv[i])*k - dy - 8;
+    const cx = gx + barW + gap/2 + dx/2;
+    svg += `<text x="${cx}" y="${topo}" text-anchor="middle" class="axis-label" style="font-weight:700;fill:${corTextoForte()};">${fmtPct(c.pct[i]).replace('+','')}</text>`;
+    svg += `<text x="${cx}" y="${h-10}" text-anchor="middle" class="axis-label" style="font-weight:600;">${r}</text>`;
+  });
+  svg += `</svg>`;
+  return `<div style="overflow-x:auto;">${svg}</div>`;
+}
+
+function varChartSVG(c, rotulos, cor1, cor2){
+  const w = larguraAnual(), padL = 20, padR = 20, padT = 30, padB = 34, dx = 9, dy = 9, scaleH = 170;
+  const groupW = (w - padL - padR) / (rotulos.length-1);
+  const barW = Math.min(32, groupW*0.28), gap = 8;
+  const v1 = c.arrVar.slice(1).map(x=>x.pct||0), v2 = c.benVar.slice(1).map(x=>x.pct||0);
+  const maxV = Math.max(0, ...v1, ...v2), minV = Math.min(0, ...v1, ...v2);
+  const range = (maxV - minV) || 1, k = scaleH/range;
+  const yBase = padT + dy + maxV*k;
+  const h = padT + dy + scaleH + padB + 14;
+  let svg = `<svg viewBox="0 0 ${w} ${h}" width="100%" height="${h}" preserveAspectRatio="xMinYMid meet">`;
+  svg += `<line x1="${padL}" y1="${yBase}" x2="${w-padR}" y2="${yBase}" stroke="${gridStroke()}" stroke-width="1.5"></line>`;
+  for(let i=1;i<rotulos.length;i++){
+    const j = i-1;
+    const gx = padL + j*groupW + (groupW - (barW*2 + gap + dx))/2;
+    svg += colBar3D(gx, yBase, barW, v1[j]*k, cor1, dx, dy, {i, serie:'varArr'});
+    svg += colBar3D(gx+barW+gap, yBase, barW, v2[j]*k, cor2, dx, dy, {i, serie:'varBen'});
+    const lab = (val, x) => {
+      const y = val>=0 ? yBase - val*k - dy - 6 : yBase - val*k + 13;
+      return `<text x="${x}" y="${y}" text-anchor="middle" class="axis-label" style="font-weight:700;fill:${corTextoForte()};">${fmtPct(val)}</text>`;
+    };
+    svg += lab(v1[j], gx + barW/2 + dx/2) + lab(v2[j], gx + barW + gap + barW/2 + dx/2);
+    const cx = gx + barW + gap/2 + dx/2;
+    const r = i===rotulos.length-1 ? `${rotulos[i]} (anualiz.)` : `${rotulos[i]} vs ${rotulos[i-1]}`;
+    svg += `<text x="${cx}" y="${h-10}" text-anchor="middle" class="axis-label" style="font-weight:600;">${r}</text>`;
+  }
+  svg += `</svg>`;
+  return `<div style="overflow-x:auto;">${svg}</div>`;
+}
+
+function attachAnualTooltips(c, rotulos){
+  document.querySelectorAll('#anualSection .anual-hit').forEach(hit=>{
+    hit.addEventListener('mouseenter', (e)=>{
+      const i = parseInt(hit.dataset.i), serie = hit.dataset.serie;
+      if(serie==='varArr' || serie==='varBen'){
+        const isArr = serie==='varArr', base = isArr ? c.arrBase : c.benBase, vr = (isArr ? c.arrVar : c.benVar)[i];
+        const ult = i===rotulos.length-1;
+        tooltipEl.innerHTML = `<span class="tt-title">${hit.dataset.nome} — ${rotulos[i]}</span>
+          <div class="tt-row"><span>${rotulos[i-1]}</span><span>${fmtBRL(base[i-1])}</span></div>
+          <div class="tt-row"><span>${rotulos[i]}</span><span>${fmtBRL(base[i])}</span></div>
+          ${ult?`<div class="tt-row"><span>Anualizado (×12/${c.mesesUlt})</span><span>${fmtBRL(base[i]*12/c.mesesUlt)}</span></div>`:''}
+          <div class="tt-row active"><span>Variação %</span><span class="${negCls(vr.pct)}">${fmtPct(vr.pct)}</span></div>
+          <div class="tt-row"><span>Variação R$</span><span class="${negCls(vr.rs)}">${fmtBRL(vr.rs)}</span></div>`;
+        tooltipEl.classList.add('show'); positionTooltip(e); return;
+      }
+      tooltipEl.innerHTML = `<span class="tt-title">${rotulos[i]}</span>
+        <div class="tt-row ${serie==='op'?'active':''}"><span>Resultado operacional</span><span class="${negCls(c.op[i])}">${fmtBRL(c.op[i])}</span></div>
+        <div class="tt-row ${serie==='inv'?'active':''}"><span>Resultado dos investimentos</span><span class="${negCls(c.inv[i])}">${fmtBRL(c.inv[i])}</span></div>
+        <div class="tt-row"><span>Resultado do plano</span><span class="${negCls(c.res[i])}">${fmtBRL(c.res[i])}</span></div>
+        <div class="tt-row"><span>% operacional</span><span class="${negCls(c.pct[i])}">${fmtPct(c.pct[i]).replace('+','')}</span></div>`;
+      tooltipEl.classList.add('show');
+      positionTooltip(e);
+    });
+    hit.addEventListener('mousemove', positionTooltip);
+    hit.addEventListener('mouseleave', hideTooltip);
+  });
+}
+
+function renderAnual(){
+  const box = document.getElementById('anualSection');
+  const tab = state.tab, isPGA = tab === 'PGA';
+  const a = DATA.ANUAL[tab];
+  const rot = DATA.ANUAL.rotulos;
+  const n = rot.length, last = n-1;
+  const c = calcAnual(tab);
+  const corOp = isLight() ? ACENTOS[tab] : ACENTOS_VIVOS[tab];
+  const nome = {MI:'Plano Multi-Instituído', MP:'Plano Multi-Patrocinado', PGA:'PGA — Gestão Administrativa'}[tab];
+  const rk = isPGA ? 'receitas' : 'arrecadacao';
+  const dk = isPGA ? 'despesas' : 'deducoes';
+
+  const somaRes = c.res.reduce((s,v)=>s+v,0), somaOp = c.op.reduce((s,v)=>s+v,0);
+  const varAtivo = (c.ativo[last]/c.ativo[last-1]-1)*100;
+
+  const kpis = [
+    {lbl:`Resultado do plano — ${rot[last]}`, val:c.res[last], sub:`Exercício ${rot[last-1]}: ${fmtBRL(c.res[last-1])}`},
+    {lbl:`Resultado operacional — ${rot[last]}`, val:c.op[last], sub:`${fmtPct(c.pct[last]).replace('+','')} do resultado do plano`, subv:c.pct[last]},
+    {lbl:`Resultado acumulado — ${rot[0]} a ${DATA.ANUAL.periodos[last]}`, val:somaRes, sub:`Operacional: ${fmtBRL(somaOp)} (${fmtPct(somaOp/somaRes*100).replace('+','')})`, subv:somaOp},
+    {lbl:`Ativo total investido — ${DATA.ANUAL.periodos[last]}`, val:c.ativo[last], sub:`${fmtPct(varAtivo)} vs. ${DATA.ANUAL.periodos[last-1]}`, subv:varAtivo}
+  ];
+  const kpiHtml = kpis.map(k=>`<div class="kpi">
+      <div class="lbl">${k.lbl}</div>
+      <div class="val ${negCls(k.val)}">${fmtBRL(k.val)}</div>
+      <div class="sub ${negCls(k.subv)}">${k.sub}</div></div>`).join('');
+
+  const head = `<tr><th>Rubrica</th>${DATA.ANUAL.periodos.map(p=>`<th>${p}</th>`).join('')}</tr>`;
+  const linha = (nomeL, arr, cls='', fmt=fmtBRL) =>
+    `<tr class="${cls}"><td>${nomeL}</td>${arr.map(v=>`<td class="${negCls(v)}">${v===null?'—':fmt(v)}</td>`).join('')}</tr>`;
+  const pctFmt = v => fmtPct(v).replace('+','');
+  let body = '';
+  body += `<tr class="grp"><td colspan="${n+1}">${isPGA?'Receitas':'Arrecadação'}</td></tr>`;
+  Object.keys(a[rk]).forEach(k=> body += linha(k, a[rk][k]));
+  if(isPGA){
+    body += linha('RESULTADO DOS INVESTIMENTOS', c.inv);
+    body += linha('TOTAL DA RECEITA', c.totRec, 'tot');
+  } else {
+    body += linha('TOTAL DA ARRECADAÇÃO', c.totRec, 'tot');
+    body += linha('RESULTADO DOS INVESTIMENTOS', c.inv, 'tot');
+  }
+  body += `<tr class="grp"><td colspan="${n+1}">${isPGA?'Despesas':'Deduções'}</td></tr>`;
+  Object.keys(a[dk]).forEach(k=> body += linha(k, a[dk][k]));
+  body += linha(isPGA?'TOTAL DAS DESPESAS':'TOTAL DAS DEDUÇÕES', c.totDed, 'tot');
+  body += `<tr class="grp"><td colspan="${n+1}">Resultado</td></tr>`;
+  body += linha('RESULTADO DO PLANO', c.res, 'tot');
+  body += linha(isPGA?'RESULTADO OPERACIONAL (ex-investimentos, ex-depreciação)':'RESULTADO OPERACIONAL (ex-investimentos)', c.op, 'tot');
+  body += linha('% do resultado operacional no resultado do plano', c.pct, '', pctFmt);
+  const lbArr = isPGA ? 'RECEITAS ADMINISTRATIVAS (ex-investimentos)' : 'ARRECADAÇÃO TOTAL';
+  const lbBen = isPGA ? 'DESPESAS ADMINISTRATIVAS TOTAIS' : 'BENEFÍCIOS PAGOS (continuada + única)';
+  body += `<tr class="grp"><td colspan="${n+1}">Variação ${isPGA?'das receitas e das despesas':'da arrecadação e dos benefícios'}</td></tr>`;
+  body += linha(lbArr, c.arrBase, 'tot');
+  body += linha('Variação % vs. exercício anterior', c.arrVar.map(x=>x.pct), '', fmtPct);
+  body += linha('Variação R$ vs. exercício anterior', c.arrVar.map(x=>x.rs));
+  body += linha(lbBen, c.benBase, 'tot');
+  body += linha('Variação % vs. exercício anterior', c.benVar.map(x=>x.pct), '', fmtPct);
+  body += linha('Variação R$ vs. exercício anterior', c.benVar.map(x=>x.rs));
+  body += `<tr class="grp"><td colspan="${n+1}">Investimentos</td></tr>`;
+  body += linha('ATIVO TOTAL INVESTIDO', c.ativo);
+  body += linha('Retorno sobre o ativo investido médio', c.ret, '', pctFmt);
+
+  const formulaOp = isPGA
+    ? 'Resultado operacional = Resultado do plano − Resultado dos investimentos + Depreciações e amortizações (mesmo critério da visão operacional mensal do PGA).'
+    : 'Resultado operacional = Resultado do plano − Resultado dos investimentos, ou seja, a arrecadação líquida das deduções (fluxo previdencial).';
+
+  box.innerHTML = `<div class="card">
+    <h3><span class="sec-badge">05</span> <span>Avaliação anual — ${nome} · ${rot[0]} a ${DATA.ANUAL.periodos[last]}</span></h3>
+    <div class="kpi-grid anual-kpis">${kpiHtml}</div>
+    <div class="chart-legend">
+      <span><span class="sw" style="background:${corOp};"></span>Resultado operacional</span>
+      <span><span class="sw" style="background:${PETROLEO_CLARO};"></span>Resultado dos investimentos</span>
+      <span><b style="color:var(--texto-alto);">%</b> Participação do resultado operacional no resultado do plano</span>
+    </div>
+    <div id="anualChart">${anualChartSVG(c, rot, corOp)}</div>
+    <h4 style="margin:20px 0 8px;font-size:12.5px;color:var(--texto-alto);">Variação anual — ${isPGA?'receitas administrativas e despesas totais':'arrecadação total e benefícios pagos'}</h4>
+    <div class="chart-legend">
+      <span><span class="sw" style="background:${corOp};"></span>${isPGA?'Receitas administrativas':'Arrecadação total'}</span>
+      <span><span class="sw" style="background:${corSerie2()};"></span>${isPGA?'Despesas totais':'Benefícios pagos'}</span>
+    </div>
+    <div id="anualVarChart">${varChartSVG(c, rot, corOp, corSerie2()).replace(/data-serie="varArr" data-nome=""/g,`data-serie="varArr" data-nome="${isPGA?'Receitas administrativas':'Arrecadação total'}"`).replace(/data-serie="varBen" data-nome=""/g,`data-serie="varBen" data-nome="${isPGA?'Despesas totais':'Benefícios pagos'}"`)}</div>
+    <p style="font-size:11px;color:var(--texto-baixo);margin:4px 0 0;">Crescimento médio anual ${rot[0]}–${rot[last-1]} (CAGR):
+      ${isPGA?'receitas administrativas':'arrecadação'} <b style="color:${c.arrCagr<0?DESFAV:'var(--texto-alto)'};">${fmtPct(c.arrCagr)}</b> ·
+      ${isPGA?'despesas totais':'benefícios pagos'} <b style="color:${c.benCagr<0?DESFAV:'var(--texto-alto)'};">${fmtPct(c.benCagr)}</b></p>
+    <div style="overflow-x:auto;margin-top:14px;">
+      <table class="anual"><thead>${head}</thead><tbody>${body}</tbody></table>
+    </div>
+    <p style="font-size:10.5px;color:var(--texto-baixo);margin:10px 0 0;line-height:1.6;">
+      ${formulaOp} Totais, resultado e percentuais calculados a partir das rubricas. Retorno sobre o ativo investido médio =
+      Resultado dos investimentos ÷ média dos saldos de ativo total investido no início e no fim do período.
+      Variações: exercício contra exercício anterior; na coluna ${DATA.ANUAL.periodos[last]} o valor parcial é anualizado
+      linearmente (×12/${c.mesesUlt}) antes da comparação com ${rot[last-1]}, o que não captura sazonalidade.
+      ${isPGA?'':'Benefícios pagos = prestação continuada + prestação única (resgates e portabilidades não incluídos).'}
+      A coluna ${DATA.ANUAL.periodos[last]} acumula jan/26 a set/26 (9 meses, sem anualização) e não é diretamente comparável
+      aos exercícios cheios. O ativo total investido não se confunde com o ativo total apresentado na seção anterior.</p>
+  </div>`;
+  attachAnualTooltips(c, rot);
+}
+
 function render(){
   document.querySelectorAll('.tab-btn').forEach(b=> b.classList.toggle('active', b.dataset.tab===state.tab));
   document.querySelectorAll('.mode-btn').forEach(b=> b.classList.toggle('active', b.dataset.mode===state.mode));
@@ -1145,6 +1403,7 @@ function render(){
   renderIndicadores();
   renderDetailTable();
   renderAtivo();
+  renderAnual();
   renderPgaOperational();
 }
 
@@ -1168,7 +1427,7 @@ document.querySelectorAll('.theme-toggle button').forEach(b=>{
 let resizeTimer = null;
 window.addEventListener('resize', ()=>{
   clearTimeout(resizeTimer);
-  resizeTimer = setTimeout(()=>{ renderChart(); renderAtivo(); }, 150);
+  resizeTimer = setTimeout(()=>{ renderChart(); renderAtivo(); renderAnual(); }, 150);
 });
 
 render();
